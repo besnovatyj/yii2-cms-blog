@@ -105,7 +105,7 @@ use yii\web\View;
                         $editorConfig = [];
                         $editorConfig['language'] = 'ru';
                         $editorConfig['fmDefaultPath'] = '/static/origin/Blog/' . $post->id;
-                        echo $form->field($model, 'content')->widget(\Besnovatyj\File\widgets\customeditor\src\CkeditorCustomWidget::class, $editorConfig);
+                        echo $form->field($model, 'content')->widget(\Besnovatyj\File\widgets\CkeditorCustomWidget::class, $editorConfig);
                     }
                     ?>
 
