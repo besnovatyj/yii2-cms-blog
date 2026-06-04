@@ -104,7 +104,7 @@ use yii\web\View;
                         // TODO создавать папку при создании поста. При удалении удалять.
                         $editorConfig = [];
                         $editorConfig['language'] = 'ru';
-                        $editorConfig['fmDefaultPath'] = '/origin/Blog/' . $post->id;
+                        $editorConfig['fmDefaultPath'] = '/static/origin/Blog/' . $post->id;
                         echo $form->field($model, 'content')->widget(\Besnovatyj\File\widgets\customeditor\src\CkeditorCustomWidget::class, $editorConfig);
                     }
                     ?>
