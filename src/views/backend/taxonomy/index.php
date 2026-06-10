@@ -7,7 +7,6 @@
 
 use Besnovatyj\TreeManager\Manager\TreeDataSource;
 use Besnovatyj\TreeManager\Manager\TreeWidget;
-use Besnovatyj\Blog\forms\backend\TaxonomyForm;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\View;
@@ -48,10 +47,6 @@ $this->params['breadcrumbs'][] = $this->title;
                     'toggleStatus' => Url::to(['/Blog/backend/taxonomy/toggle-status']),
                     'checkIntegrity' => Url::to(['/Blog/backend/taxonomy/check-integrity']),
                 ],
-//                'forms' => [
-//                    'createFormClass' => TaxonomyForm::class,
-//                    'updateFormClass' => TaxonomyForm::class,
-//                ],
                 'serverForms' => [
                     'enabled' => true,
                     'display' => 'modal',
