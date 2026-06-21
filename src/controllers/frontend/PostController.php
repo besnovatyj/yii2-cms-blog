@@ -1,6 +1,5 @@
 <?php
 
-
 /*
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
@@ -15,13 +14,12 @@ use Besnovatyj\Blog\services\CommentService;
 use Yii;
 
 use yii\helpers\VarDumper;
+use yii\log\Logger;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class PostController extends \yii\web\Controller
 {
-    use \common\components\controller\ControllerTrait;
-
     private CommentService $service;
     private PostReadRepository $posts;
     private TaxonomyReadRepository $taxonomies;
@@ -131,7 +129,7 @@ class PostController extends \yii\web\Controller
         if ($form->load(Yii::$app->request->post()) && $form->validate()) {
             try {
                 $comment = $this->service->create($post->id, Yii::$app->user->id, $form);
-                $this->userLog('create comment #' . $comment->id, __METHOD__);
+                Yii::getLogger()->log('user #' . Yii::$app->user->id . ' - ' . 'create comment #' . $comment->id, Logger::LEVEL_TRACE, __METHOD__);
                 return $this->redirect(['post', 'id' => $post->id, '#' => 'comment_' . $comment->id]);
             } catch (\DomainException $e) {
                 $this->handleDomainException($e, 'Ошибка');
