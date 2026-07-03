@@ -11,7 +11,7 @@ use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\forms\backend\PostForm;
 use Besnovatyj\Blog\forms\backend\search\PostSearch;
 use Besnovatyj\Blog\services\manage\PostManageService;
-use common\components\controller\ControllerTrait;
+use Besnovatyj\Kernel\controller\ControllerTrait;
 use Besnovatyj\Kernel\urlmanager\UrlManagerHelperTrait;
 use Exception;
 use Throwable;

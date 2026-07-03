@@ -25,7 +25,7 @@ use yii\web\Response;
 
 class TagController extends \yii\web\Controller
 {
-    use \common\components\controller\ControllerTrait;
+    use \Besnovatyj\Kernel\controller\ControllerTrait;
 
     private $service;
     private $posts;

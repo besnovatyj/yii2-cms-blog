@@ -21,7 +21,7 @@ use yii\web\Response;
 
 class CommentController extends \yii\web\Controller
 {
-    use \common\components\controller\ControllerTrait;
+    use \Besnovatyj\Kernel\controller\ControllerTrait;
 
     private $service;
 
