@@ -12,7 +12,7 @@ use Besnovatyj\Blog\entities\Comment;
 use Besnovatyj\Blog\forms\frontend\CommentForm;
 use Besnovatyj\Blog\repositories\CommentRepository;
 use Besnovatyj\Blog\repositories\PostRepository;
-use modules\user\repositories\UserRepository;
+use Besnovatyj\User\repositories\UserRepository;
 
 class CommentService
 {

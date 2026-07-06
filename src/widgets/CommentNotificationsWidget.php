@@ -8,7 +8,7 @@
 namespace Besnovatyj\Blog\widgets;
 
 use Besnovatyj\Blog\entities\Comment;
-use modules\user\components\Helper;
+use Besnovatyj\User\components\Helper;
 use yii\bootstrap5\Widget;
 
 class CommentNotificationsWidget extends Widget

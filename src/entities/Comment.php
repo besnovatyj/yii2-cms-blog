@@ -9,7 +9,7 @@ namespace Besnovatyj\Blog\entities;
 
 use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\entities\queries\CommentQuery;
-use modules\user\entities\User;
+use Besnovatyj\User\entities\User;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
