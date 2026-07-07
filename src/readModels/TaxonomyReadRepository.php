@@ -47,7 +47,7 @@ class TaxonomyReadRepository
         return Taxonomy::find()->andWhere(['slug' => $slug])->one();
     }
 
-    public function getTreeWithSubsOf(Taxonomy $taxonomy = null): array
+    public function getTreeWithSubsOf(?Taxonomy $taxonomy = null): array
     { // TODO - JOIN - blog_posts - count()
         $query = Taxonomy::find()->orderBy('lft');
         if ($taxonomy) {

@@ -18,7 +18,7 @@ class TaxonomiesForm extends Model
     public $main;
     public $others = [];
 
-    public function __construct(Post $post = null, $config = [])
+    public function __construct(?Post $post = null, $config = [])
     {
         if ($post) {
             $this->main = $post->taxonomy_id;

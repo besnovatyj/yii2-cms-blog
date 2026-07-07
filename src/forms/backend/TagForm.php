@@ -20,7 +20,7 @@ class TagForm extends Model
 
     private $_tag;
 
-    public function __construct(Tag $tag = null, $config = [])
+    public function __construct(?Tag $tag = null, $config = [])
     {
         if ($tag) {
             $this->name = $tag->name;
