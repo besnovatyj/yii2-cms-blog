@@ -95,20 +95,6 @@ use yii\web\View;
                 <div class="card-body">
                     <?= $form->field($model, 'title')->textInput(['maxlength' => true, 'class' => 'form-control']) ?>
                     <?= $form->field($model, 'description')->textarea(['rows' => 5, 'class' => 'form-control']) ?>
-
-
-                    <?php
-//                    if (!isset($post)) {
-//                        echo '<div class="alert alert-danger" role="alert">Перед заполнением контента сохраните пост.</div>';
-//                    } else {
-//                        // TODO создавать папку при создании поста. При удалении удалять.
-//                        $editorConfig = [];
-//                        $editorConfig['language'] = 'ru';
-//                        $editorConfig['fmDefaultPath'] = '/static/origin/Blog/' . $post->id;
-//                        echo $form->field($model, 'content')->widget(\Besnovatyj\File\widgets\CkeditorCustomWidget::class, $editorConfig);
-//                    }
-                    ?>
-
                     <?php
                     if (!isset($post)) {
                         echo '<div class="alert alert-danger" role="alert">Перед заполнением контента сохраните пост.</div>';
@@ -119,18 +105,6 @@ use yii\web\View;
                             'height' => 500, 'fmDefaultPath' => '/static/origin/Blog/' . $post->id,
                         ]);
                     }
-                    ?>
-
-                    <?php
-                    //                    if (!isset($post)) {
-                    //                        echo '<div class="alert alert-danger" role="alert">Перед заполнением контента сохраните пост.</div>';
-                    //                    } else {
-                    //                        // TODO создавать папку при создании поста. При удалении удалять.
-                    //                        $editorConfig = [];
-                    //                        $editorConfig['language'] = 'ru';
-                    //                        $editorConfig['fmDefaultPath'] = '/origin/Blog/' . $post->id;
-                    //                        echo $form->field($model, 'content')->widget(\modules\file\widgets\editor\src\CKEditor5::class, $editorConfig);
-                    //                    }
                     ?>
                 </div>
                 <div class="card-footer">
