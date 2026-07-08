@@ -42,7 +42,8 @@
     "yiisoft/yii2-bootstrap5": "~2.0.0",
     "besnovatyj/yii2-cms-meta": "^1.0",
     "besnovatyj/yii2-cms-tree-manager": "^1.0",
-    "besnovatyj/yii2-cms-helpers": "^1.0"
+    "besnovatyj/yii2-cms-helpers": "^1.0",
+    "besnovatyj/yii2-cms-editor": "^1.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

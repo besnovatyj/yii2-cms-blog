@@ -98,17 +98,28 @@ use yii\web\View;
 
 
                     <?php
+//                    if (!isset($post)) {
+//                        echo '<div class="alert alert-danger" role="alert">Перед заполнением контента сохраните пост.</div>';
+//                    } else {
+//                        // TODO создавать папку при создании поста. При удалении удалять.
+//                        $editorConfig = [];
+//                        $editorConfig['language'] = 'ru';
+//                        $editorConfig['fmDefaultPath'] = '/static/origin/Blog/' . $post->id;
+//                        echo $form->field($model, 'content')->widget(\Besnovatyj\File\widgets\CkeditorCustomWidget::class, $editorConfig);
+//                    }
+                    ?>
+
+                    <?php
                     if (!isset($post)) {
                         echo '<div class="alert alert-danger" role="alert">Перед заполнением контента сохраните пост.</div>';
                     } else {
-                        // TODO создавать папку при создании поста. При удалении удалять.
-                        $editorConfig = [];
-                        $editorConfig['language'] = 'ru';
-                        $editorConfig['fmDefaultPath'] = '/static/origin/Blog/' . $post->id;
-                        echo $form->field($model, 'content')->widget(\Besnovatyj\File\widgets\CkeditorCustomWidget::class, $editorConfig);
+                        // Виджет-фасад: конкретный редактор (Jodit/CKEditor5/...) выбирается
+                        // глобально настройкой Editor.engine, форма от движка не зависит.
+                        echo  $form->field($model, 'content')->widget(\Besnovatyj\Editor\EditorWidget::class, [
+                            'height' => 500, 'fmDefaultPath' => '/static/origin/Blog/' . $post->id,
+                        ]);
                     }
                     ?>
-
 
                     <?php
                     //                    if (!isset($post)) {
