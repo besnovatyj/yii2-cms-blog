@@ -8,7 +8,7 @@
 namespace Besnovatyj\Blog\widgets;
 
 use Besnovatyj\Blog\entities\Comment;
-use Besnovatyj\User\components\Helper;
+use Besnovatyj\Kernel\security\AccessHelper;
 use yii\bootstrap5\Widget;
 
 class CommentNotificationsWidget extends Widget
@@ -23,7 +23,7 @@ class CommentNotificationsWidget extends Widget
 
     public function run()
     {
-        if (Helper::checkRoute('comment/view')) {
+        if (AccessHelper::checkRoute('comment/view')) {
             return $this->render('comment-notifications', ['comments' => $this->comments]);
         }
         return '';

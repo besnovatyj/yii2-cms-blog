@@ -8,7 +8,7 @@
 use Besnovatyj\Blog\entities\Comment;
 use Besnovatyj\Blog\forms\backend\search\CommentSearch;
 use Besnovatyj\Backend\Widgets\grid\ActionColumn;
-use Besnovatyj\User\components\Helper;
+use Besnovatyj\Kernel\security\AccessHelper;
 use yii\data\ActiveDataProvider;
 use yii\grid\GridView;
 use yii\helpers\StringHelper;
@@ -48,7 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'format' => 'raw',
                 ],
                 ['class' => ActionColumn::class,
-                    'template' => Helper::filterActionColumn(['view', 'update', 'delete',]),
+                    'template' => AccessHelper::filterActionColumn(['view', 'update', 'delete',]),
                 ],
             ],
         ]); ?>

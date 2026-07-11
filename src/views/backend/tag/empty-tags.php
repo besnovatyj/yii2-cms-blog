@@ -8,7 +8,7 @@
 use Besnovatyj\Blog\entities\Tag;
 use Besnovatyj\Blog\forms\backend\search\TagSearch;
 use Besnovatyj\Backend\Widgets\grid\ActionColumn;
-use Besnovatyj\User\components\Helper;
+use Besnovatyj\Kernel\security\AccessHelper;
 use Besnovatyj\Backend\Widgets\pagination\LinkPager;
 use yii\data\ActiveDataProvider;
 use yii\helpers\Html;
@@ -53,7 +53,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'format' => 'raw',
                 ],
                 ['class' => ActionColumn::class,
-                    'template' => Helper::filterActionColumn(['view', 'update', 'delete',]),
+                    'template' => AccessHelper::filterActionColumn(['view', 'update', 'delete',]),
                 ],
             ],
         ]) ?>
