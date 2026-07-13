@@ -34,6 +34,26 @@ class PostReadRepository
         return $this->getProvider($query);
     }
 
+    /**
+     * Простой полнотекстовый поиск по активным постам (title/description/content) через LIKE.
+     * Базовая реализация для фронтового поиска; пустой запрос возвращает все активные посты.
+     */
+    public function search(string $text): DataProviderInterface
+    {
+        $query = Post::find()->active()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
+
+        $text = trim($text);
+        if ($text !== '') {
+            $query->andWhere(['or',
+                ['like', 'title', $text],
+                ['like', 'description', $text],
+                ['like', 'content', $text],
+            ]);
+        }
+
+        return $this->getProvider($query);
+    }
+
     public function getAllByTaxonomy(Taxonomy $taxonomy): DataProviderInterface
     {
         $query = Post::find()->alias('p')->active('p')->orderBy(['pinned' => SORT_DESC])->with('taxonomy');
