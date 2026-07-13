@@ -47,6 +47,19 @@ class TaxonomyReadRepository
         return Taxonomy::find()->andWhere(['slug' => $slug])->one();
     }
 
+    /**
+     * ЧПУ-путь таксономии: слаги предков (без виртуального корня depth=0) и самого узла через «/».
+     * Используется {@see \Besnovatyj\Blog\urls\TaxonomyUrlRule} для разбора/генерации ЧПУ-адресов.
+     */
+    public function pathTo(Taxonomy $taxonomy): string
+    {
+        $nodes = $this->treeScope->parentsQuery($taxonomy, andSelf: true)
+            ->andWhere(['>', 'depth', 0])
+            ->all();
+
+        return implode('/', ArrayHelper::getColumn($nodes, 'slug'));
+    }
+
     public function getTreeWithSubsOf(?Taxonomy $taxonomy = null): array
     { // TODO - JOIN - blog_posts - count()
         $query = Taxonomy::find()->orderBy('lft');

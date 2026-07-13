@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 use Besnovatyj\Blog\Module;
+use Besnovatyj\Blog\urls\TaxonomyUrlRule;
 
 /**
  * Yii2-конфиг модуля для движка yiisoft/config (группа `common` — общий для всех приложений).
@@ -42,8 +43,10 @@ return [
                 'blog/tag/<slug:[\w\-]+>'                 => 'Blog/post/tag',
                 'blog/<id:\d+>'                           => 'Blog/post/view',
                 'blog/<id:\d+>/comment'                   => 'Blog/post/comment',
-                'blog/<slug:[\w\-]+>/<page:\d+>'          => 'Blog/post/taxonomy', // <page> — пагинация
-                'blog/<slug:[\w\-]+>'                     => 'Blog/post/taxonomy',
+                // Дерево таксономий (вложенные слаги, 301-нормализация) — класс-правило вместо строковых
+                // 'blog/<slug>'. Должно идти ПОСЛЕ специфичных выше (его regex ловит и blog/search, blog/tag/*).
+                // Пагинация — через ?page= (стандартный Pagination), не сегментом пути.
+                ['class' => TaxonomyUrlRule::class],
             ],
         ],
     ],

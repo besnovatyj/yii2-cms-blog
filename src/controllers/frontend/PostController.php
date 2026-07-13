@@ -55,13 +55,14 @@ class PostController extends \yii\web\Controller
     }
 
     /**
-     * @param string $slug
-     * @return string
+     * Таксономия по id — id резолвит {@see \Besnovatyj\Blog\urls\TaxonomyUrlRule} из ЧПУ slug-пути
+     * (с 301-нормализацией), поэтому экшен принимает стабильный id, а не slug.
+     *
      * @throws NotFoundHttpException
      */
-    public function actionTaxonomy(string $slug): string
+    public function actionTaxonomy(int $id): string
     {
-        if (!$taxonomy = $this->taxonomies->findBySlug($slug)) {
+        if (!$taxonomy = $this->taxonomies->find($id)) {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
 
