@@ -50,4 +50,6 @@ return [
             ],
         ],
     ],
+    // L2-bootstrap: инвалидация кэша ЧПУ-путей таксономий при правках дерева (см. Bootstrap).
+    'bootstrap' => array_values(Module::bootstrapClasses()),
 ];
