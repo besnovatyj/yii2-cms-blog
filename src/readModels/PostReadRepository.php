@@ -12,6 +12,7 @@ use Exception;
 use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\entities\Tag;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
+use Besnovatyj\Blog\forms\frontend\search\SearchForm;
 use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\db\ActiveQuery;
@@ -37,12 +38,13 @@ class PostReadRepository
     /**
      * Простой полнотекстовый поиск по активным постам (title/description/content) через LIKE.
      * Базовая реализация для фронтового поиска; пустой запрос возвращает все активные посты.
+     * Значение идёт в параметризованный `like`-предикат (экранируется), длина ограничена формой.
      */
-    public function search(string $text): DataProviderInterface
+    public function search(SearchForm $form): DataProviderInterface
     {
         $query = Post::find()->active()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
 
-        $text = trim($text);
+        $text = trim((string)$form->text);
         if ($text !== '') {
             $query->andWhere(['or',
                 ['like', 'title', $text],

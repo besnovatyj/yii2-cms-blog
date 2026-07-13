@@ -6,6 +6,7 @@
 
 namespace Besnovatyj\Blog\controllers\frontend;
 
+use Besnovatyj\Blog\forms\frontend\search\SearchForm;
 use Besnovatyj\Blog\readModels\PostReadRepository;
 use Yii;
 use yii\web\Controller;
@@ -13,9 +14,9 @@ use yii\web\Controller;
 /**
  * Фронтовый поиск по блогу.
  *
- * Простейшая базовая реализация: принимает строку запроса `q`, ищет по активным постам
- * (title/description/content) и переиспользует вью списка постов `/frontend/post/index`.
- * Роут — `Blog/search/index` (ЧПУ `blog/search`, правило в config/common.php).
+ * Базовая безопасная реализация по образцу {@see \Besnovatyj\Person\controllers\frontend\PersonController::actionSearch}:
+ * запрос читается в {@see SearchForm} из query-параметров, валидируется, затем read-репозиторий строит
+ * параметризованный `like`-поиск по активным постам. Роут — `Blog/search/index` (ЧПУ `blog/search`).
  */
 class SearchController extends Controller
 {
@@ -33,12 +34,15 @@ class SearchController extends Controller
 
     public function actionIndex(): string
     {
-        $query = (string)Yii::$app->request->get('q', '');
-        $dataProvider = $this->posts->search($query);
+        $form = new SearchForm();
+        $form->load(Yii::$app->request->queryParams);
+        $form->validate();
 
-        return $this->render('/frontend/post/index', [
+        $dataProvider = $this->posts->search($form);
+
+        return $this->render('/frontend/search/index', [
             'dataProvider' => $dataProvider,
-            'query' => $query,
+            'searchForm' => $form,
         ]);
     }
 }
