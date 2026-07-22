@@ -46,7 +46,7 @@ return [
                 // Дерево таксономий (вложенные слаги, 301-нормализация) — класс-правило вместо строковых
                 // 'blog/<slug>'. Должно идти ПОСЛЕ специфичных выше (его regex ловит и blog/search, blog/tag/*).
                 // Пагинация — через ?page= (стандартный Pagination), не сегментом пути.
-                ['class' => TaxonomyUrlRule::class],
+                //['class' => TaxonomyUrlRule::class],
             ],
         ],
     ],
