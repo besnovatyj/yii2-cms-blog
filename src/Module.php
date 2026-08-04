@@ -16,7 +16,8 @@ use Besnovatyj\Contracts\module\ProvidesMigrations;
 use Besnovatyj\Contracts\module\ProvidesOptions;
 use Besnovatyj\Contracts\menu\MenuTarget;
 use Besnovatyj\Contracts\menu\MenuTargetProvider;
-use Besnovatyj\Blog\readModels\TaxonomyReadRepository;
+use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
+use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use Yii;
 
 class Module extends CmsModule implements
@@ -86,12 +87,7 @@ class Module extends CmsModule implements
      */
     private function taxonomySlugMap(): array
     {
-        $map = [];
-        foreach ((new TaxonomyReadRepository())->getAll() as $taxonomy) {
-            $prefix = $taxonomy->depth > 0 ? str_repeat('— ', (int)$taxonomy->depth) : '';
-            $map[$taxonomy->slug] = $prefix . $taxonomy->name;
-        }
-        return $map;
+        return (new TreeQueryScope(Taxonomy::class))->dropdownTree(keyAttribute: 'slug', indent: '— ');
     }
 
 }
