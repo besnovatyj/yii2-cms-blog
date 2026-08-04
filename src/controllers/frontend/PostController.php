@@ -49,7 +49,7 @@ class PostController extends \yii\web\Controller
     {
         $dataProvider = $this->posts->getAll();
 
-        return $this->render('/frontend/post/index', [
+        return $this->render('index', [
             'dataProvider' => $dataProvider,
         ]);
     }
@@ -68,7 +68,7 @@ class PostController extends \yii\web\Controller
 
         $dataProvider = $this->posts->getAllByTaxonomy($taxonomy);
 
-        return $this->render('/frontend/post/taxonomy', [
+        return $this->render('taxonomy', [
             'taxonomy' => $taxonomy,
             'dataProvider' => $dataProvider,
         ]);
@@ -87,7 +87,7 @@ class PostController extends \yii\web\Controller
 
         $dataProvider = $this->posts->getAllByTag($tag);
 
-        return $this->render('/frontend/post/tag', [
+        return $this->render('tag', [
             'tag' => $tag,
             'dataProvider' => $dataProvider,
         ]);
@@ -105,7 +105,7 @@ class PostController extends \yii\web\Controller
         }
 
         $post->refreshViewCounter();
-        return $this->render('/frontend/post/view', [
+        return $this->render('view', [
             'post' => $post,
         ]);
     }
@@ -137,7 +137,7 @@ class PostController extends \yii\web\Controller
             }
         }
 
-        return $this->render('/frontend/post/post', [
+        return $this->render('post', [
             'post' => $post,
             'model' => $form,
         ]);
