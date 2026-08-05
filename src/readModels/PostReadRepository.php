@@ -7,6 +7,7 @@
 
 namespace Besnovatyj\Blog\readModels;
 
+use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use DomainException;
 use Exception;
 use Besnovatyj\Blog\entities\Post;
@@ -19,6 +20,13 @@ use yii\db\ActiveQuery;
 
 class PostReadRepository
 {
+    private TreeQueryScope $treeScope;
+
+    public function __construct()
+    {
+        $this->treeScope = new TreeQueryScope(Taxonomy::class);
+    }
+
     public function count(): int
     {
         return Post::find()->active()->count();
@@ -59,11 +67,10 @@ class PostReadRepository
     public function getAllByTaxonomy(Taxonomy $taxonomy): DataProviderInterface
     {
         $query = Post::find()->alias('p')->active('p')->orderBy(['pinned' => SORT_DESC])->with('taxonomy');
+        $ids = $this->treeScope->descendantIds($taxonomy, andSelf: true);
         $query->joinWith(['taxonomyAssignments ta'], false);
-        $query->andWhere(['or', ['p.taxonomy_id' => $taxonomy->id], ['ta.taxonomy_id' => $taxonomy->id]]);
+        $query->andWhere(['or', ['p.taxonomy_id' => $ids], ['ta.taxonomy_id' => $ids]]);
         $query->groupBy('p.id');
-
-//        $query = Post::find()->active()->andWhere(['taxonomy_id' => $taxonomy->id])->with('taxonomy');
         return $this->getProvider($query);
     }
 
