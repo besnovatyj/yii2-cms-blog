@@ -40,7 +40,7 @@ class SearchController extends Controller
 
         $dataProvider = $this->posts->search($form);
 
-        return $this->render('/frontend/search/index', [
+        return $this->render('index', [
             'dataProvider' => $dataProvider,
             'searchForm' => $form,
         ]);
