@@ -5,6 +5,7 @@
  */
 
 use Besnovatyj\Blog\entities\Post;
+use Besnovatyj\Blog\forms\frontend\CommentForm;
 use Besnovatyj\Blog\widgets\CommentsWidget;
 use yii\base\Module;
 use yii\helpers\Html;
@@ -13,6 +14,7 @@ use yii\web\View;
 
 /* @var $this View */
 /* @var $post Post */
+/* @var $model CommentForm */
 
 $this->title = $post->title;
 

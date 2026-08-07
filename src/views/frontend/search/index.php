@@ -4,20 +4,32 @@
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
 
+use Besnovatyj\Blog\forms\frontend\search\SearchForm;
+use yii\bootstrap5\ActiveForm;
+use yii\bootstrap5\LinkPager;
+use yii\data\DataProviderInterface;
+use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\web\View;
+
 /**
  * Базовая вью фронтового поиска по блогу (пакетный фолбэк; тема может переопределить).
  *
- * @var yii\web\View $this
- * @var yii\data\DataProviderInterface $dataProvider
- * @var Besnovatyj\Blog\forms\frontend\search\SearchForm $searchForm
+ * @var View $this
+ * @var DataProviderInterface $dataProvider
+ * @var SearchForm $searchForm
  */
 
-use yii\bootstrap5\ActiveForm;
-use yii\bootstrap5\LinkPager;
-use yii\helpers\Html;
-use yii\helpers\Url;
-
 $this->title = 'Поиск по блогу';
+
+$this->params['og:title'] = $this->title;
+
+$this->params['breadcrumbs'][] = ['label' => 'Блог', 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
+
+$this->registerMetaTag(['name' => 'title', 'content' => $this->title]);
+$this->registerMetaTag(['name' => 'author', 'content' => Yii::$app->getModule('Config')->params['frontend']['app']['name']]);
+
 $posts = $dataProvider->getModels();
 ?>
 <div class="container py-4">
@@ -28,11 +40,11 @@ $posts = $dataProvider->getModels();
         'action' => ['/Blog/search/index'],
         'options' => ['class' => 'mb-4'],
     ]); ?>
-        <?= $form->field($searchForm, 'text')->textInput([
-            'placeholder' => 'Что ищем?',
-            'maxlength' => true,
-        ]) ?>
-        <?= Html::submitButton('Найти', ['class' => 'btn btn-primary']) ?>
+    <?= $form->field($searchForm, 'text')->textInput([
+        'placeholder' => 'Что ищем?',
+        'maxlength' => true,
+    ]) ?>
+    <?= Html::submitButton('Найти', ['class' => 'btn btn-primary']) ?>
     <?php ActiveForm::end(); ?>
 
     <?php if ($posts === []): ?>
