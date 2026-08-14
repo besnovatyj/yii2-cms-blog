@@ -22,16 +22,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
 ?>
 
-<div class="text-danger border border-warning m-1 p-2"> $this->beginBlock('pageRight.Actions');</div>
-
-<?php $this->beginBlock('pageRight.Actions'); ?>
 <?php echo $this->render('_pageActions', [
     '$this' => $this,
     'post' => $post,
     'frontendUrl' => $frontendUrl,
     'absoluteFrontendUrl' => $absoluteFrontendUrl,
 ]); ?>
-<?php $this->endBlock(); ?>
 
 <div>
     <h1>TODO HighlightAssets и Mathjax277Asset</h1>
