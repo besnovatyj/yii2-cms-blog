@@ -251,7 +251,8 @@ class Post extends ActiveRecord
                 'thumbnails' => [
                     new ThumbnailProfile('admin', width: 100, height: 57, quality: 80, mode: ThumbnailMode::Crop),
                     new ThumbnailProfile('admin_view', width: 350, height: 350, mode: ThumbnailMode::Resize),
-                    new ThumbnailProfile('blog_list', width: 350, height: 350, mode: ThumbnailMode::Crop),
+                    new ThumbnailProfile('blog_list', width: 800, height: 400, mode: ThumbnailMode::Crop),
+                    new ThumbnailProfile('blog_post', width: 1400, height: 1400, mode: ThumbnailMode::Resize),
                 ],
                 'thumbPathTemplate' => 'cache/Blog/{pk}/{filename}_{profile}.{extension}',
             ],
