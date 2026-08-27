@@ -29,7 +29,7 @@ class m250226_120000_create_blog_taxonomy_table extends BaseMigration
         $this->createTable(static::TABLE_NAME, [
             'id' => $this->primaryKey(),
             'tree' => $this->integer()->null()
-                ->comment('Идентификатор дерева'), // TODO Кажется, при переносе веток между деревьями обнуляется, проверить
+                ->comment('Идентификатор дерева'),
             'lft' => $this->integer(10)->notNull()
                 ->comment('Левый ключ NestedSets'),
             'rgt' => $this->integer(10)->notNull()

@@ -29,10 +29,6 @@ $this->params['breadcrumbs'][] = $this->title;
     'absoluteFrontendUrl' => $absoluteFrontendUrl,
 ]); ?>
 
-<div>
-    <h1>TODO HighlightAssets и Mathjax277Asset</h1>
-</div>
-
 <div class="row">
     <div class="col-12 col-md-6">
         <div class="card">
