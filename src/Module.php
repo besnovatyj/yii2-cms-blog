@@ -16,14 +16,18 @@ use Besnovatyj\Contracts\module\ProvidesMigrations;
 use Besnovatyj\Contracts\module\ProvidesOptions;
 use Besnovatyj\Contracts\menu\MenuTarget;
 use Besnovatyj\Contracts\menu\MenuTargetProvider;
+use Besnovatyj\Contracts\search\SearchableProvider;
+use Besnovatyj\Contracts\search\SearchSource;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
+use Besnovatyj\Blog\readModels\PostReadRepository;
+use Besnovatyj\Blog\readModels\TaxonomyReadRepository;
 use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use Yii;
 
 class Module extends CmsModule implements
     DeclaresModule, ProvidesAdminMenu, ProvidesBootstrap,
     ProvidesDependencies, ProvidesDirectories,
-    ProvidesMigrations, ProvidesOptions, MenuTargetProvider
+    ProvidesMigrations, ProvidesOptions, MenuTargetProvider, SearchableProvider
 {
     public const bool EDITABLE = true;
     public const string VERSION = '1.0.0';
@@ -90,4 +94,29 @@ class Module extends CmsModule implements
         return (new TreeQueryScope(Taxonomy::class))->dropdownTree(keyAttribute: 'slug', indent: '— ');
     }
 
+    /**
+     * Контент модуля для сквозного поиска. Реализация {@see SearchableProvider};
+     * вызывается только модулем поиска, если он установлен.
+     *
+     * @return SearchSource[]
+     */
+    public function searchSources(): array
+    {
+        return [
+            new SearchSource('blog.post', 'Статьи блога', 1.0, 'bi bi-newspaper'),
+            new SearchSource('blog.taxonomy', 'Разделы блога', 0.7, 'bi bi-diagram-3'),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function searchDocuments(string $type): iterable
+    {
+        return match ($type) {
+            'blog.post' => (new PostReadRepository())->searchDocuments(),
+            'blog.taxonomy' => (new TaxonomyReadRepository())->searchDocuments(),
+            default => [],
+        };
+    }
 }

@@ -14,6 +14,7 @@ use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\entities\Tag;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\forms\frontend\search\SearchForm;
+use Besnovatyj\Contracts\search\SearchDocument;
 use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\db\ActiveQuery;
@@ -130,6 +131,46 @@ class PostReadRepository
             return $post;
         }
         return null;
+    }
+
+    /**
+     * Опубликованные посты для сквозного поиска.
+     *
+     * В индекс идут только активные записи — то же, что видит анонимный посетитель. Теги и
+     * название раздела кладутся в ключевые слова: по ним ищут, но в карточке выдачи они не нужны.
+     * Связи подгружаются пачкой (`with`), иначе на каждый пост уходило бы по два лишних запроса.
+     *
+     * @return iterable<SearchDocument>
+     */
+    public function searchDocuments(): iterable
+    {
+        $query = Post::find()->active()
+            ->with(['tags', 'taxonomy'])
+            ->orderBy(['id' => SORT_ASC]);
+
+        /** @var Post $post */
+        foreach ($query->each(100) as $post) {
+            $keywords = array_map(static fn (Tag $tag): string => (string)$tag->name, $post->tags);
+
+            if ($post->taxonomy !== null) {
+                $keywords[] = (string)$post->taxonomy->name;
+            }
+
+            yield new SearchDocument(
+                type: 'blog.post',
+                entityId: (int)$post->id,
+                route: '/Blog/post/view',
+                params: ['id' => (int)$post->id],
+                title: (string)$post->title,
+                text: (string)$post->content,
+                keywords: implode(' ', $keywords),
+                excerpt: $post->description,
+                date: (int)$post->created_at,
+                image: $post->getThumbUrl('photo', 'blog_list'),
+                // Закреплённые посты и в поиске должны идти чуть выше при равной релевантности.
+                boost: (int)$post->pinned === Post::PINNED ? 1.3 : 1.0,
+            );
+        }
     }
 
     private function getProvider(ActiveQuery $query): ActiveDataProvider

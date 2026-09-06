@@ -8,6 +8,7 @@
 namespace Besnovatyj\Blog\readModels;
 
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
+use Besnovatyj\Contracts\search\SearchDocument;
 use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use yii\helpers\ArrayHelper;
 
@@ -58,6 +59,33 @@ class TaxonomyReadRepository
             ->all();
 
         return implode('/', ArrayHelper::getColumn($nodes, 'slug'));
+    }
+
+    /**
+     * Разделы блога для сквозного поиска.
+     *
+     * Фильтра по статусу здесь нет намеренно: фронтенд блога тоже показывает все таксономии
+     * (колонка `status` во фронтовых выборках не участвует), а индексировать нужно ровно то, что
+     * посетитель и так может открыть. Если во фронте появится фильтр публикации — его нужно
+     * повторить и здесь, иначе в выдачу попадут скрытые разделы.
+     *
+     * @return iterable<SearchDocument>
+     */
+    public function searchDocuments(): iterable
+    {
+        $query = Taxonomy::find()->orderBy(['id' => SORT_ASC]);
+
+        /** @var Taxonomy $taxonomy */
+        foreach ($query->each(100) as $taxonomy) {
+            yield new SearchDocument(
+                type: 'blog.taxonomy',
+                entityId: (int)$taxonomy->id,
+                route: '/Blog/post/taxonomy',
+                params: ['slug' => $taxonomy->slug],
+                title: (string)$taxonomy->name,
+                text: (string)$taxonomy->description,
+            );
+        }
     }
 
     public function getTreeWithSubsOf(?Taxonomy $taxonomy = null): array
