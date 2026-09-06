@@ -9,14 +9,14 @@ namespace Besnovatyj\Blog\controllers\backend;
 
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\forms\backend\TaxonomyForm;
-use Besnovatyj\Blog\readModels\PostReadRepository;
+use Besnovatyj\Blog\repositories\PostRepository;
 use Besnovatyj\TreeManager\Manager\controllers\TreeController;
 use Besnovatyj\TreeManager\Manager\TreeDataSource;
 use Yii;
 
 class TaxonomyController extends TreeController
 {
-    private PostReadRepository $postsReadRepo;
+    private PostRepository $posts;
 
     public function __construct($id, $module, $config = [])
     {
@@ -37,7 +37,7 @@ class TaxonomyController extends TreeController
         $this->formView = '_form';
         $this->indexTitle = 'Управление категориями';
 
-        $this->postsReadRepo = new PostReadRepository();
+        $this->posts = new PostRepository();
 
         parent::__construct($id, $module, $config);
     }
@@ -46,7 +46,7 @@ class TaxonomyController extends TreeController
     public function actionTaxonomicPosts(int $id): string
     {
         $taxonomy = $this->treeManager->getNode($id);
-        $dataProvider = $this->postsReadRepo->getAllByOtherTaxonomy($taxonomy);
+        $dataProvider = $this->posts->getAllByOtherTaxonomy($taxonomy);
 
         return $this->renderPartial('taxonomic', [
             'taxonomy' => $taxonomy,

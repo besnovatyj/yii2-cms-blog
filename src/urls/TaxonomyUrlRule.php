@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Besnovatyj\Blog\urls;
 
-use Besnovatyj\Blog\readModels\TaxonomyReadRepository;
+use Besnovatyj\Blog\repositories\TaxonomyRepository;
 use Yii;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
@@ -25,7 +25,7 @@ use yii\web\UrlRuleInterface;
  * `blog_taxonomies`), при неканоническом пути — 301 на канонический адрес.
  *
  * Подключается как `['class' => TaxonomyUrlRule::class]` в `components.frontendUrlManager.rules`
- * (группа `common`); {@see TaxonomyReadRepository} внедряет контейнер. Требует
+ * (группа `common`); {@see TaxonomyRepository} внедряет контейнер. Требует
  * `frontendUrlManager.cache = false` (объект-правило с сервисами не сериализуется в кэш правил).
  */
 final class TaxonomyUrlRule extends BaseObject implements UrlRuleInterface
@@ -36,10 +36,10 @@ final class TaxonomyUrlRule extends BaseObject implements UrlRuleInterface
     /** Внутренний роут с id таксономии (капитализирован под id модуля 'Blog'). */
     public string $route = 'Blog/post/taxonomy';
 
-    private TaxonomyReadRepository $repository;
+    private TaxonomyRepository $repository;
     private CacheInterface $cache;
 
-    public function __construct(TaxonomyReadRepository $repository, $config = [])
+    public function __construct(TaxonomyRepository $repository, $config = [])
     {
         parent::__construct($config);
         $this->repository = $repository;

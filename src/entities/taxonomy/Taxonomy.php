@@ -32,6 +32,12 @@ use yii\db\ActiveQuery;
  */
 class Taxonomy extends Node
 {
+    /** Раздел скрыт: ни он сам, ни его посты не доступны на фронте. */
+    public const int STATUS_INACTIVE = 0;
+
+    /** Раздел опубликован. */
+    public const int STATUS_ACTIVE = 1;
+
     public $meta;
 
     public static function create($name, $slug, $description, Meta $meta): self
@@ -59,7 +65,15 @@ class Taxonomy extends Node
 
     public function changeStatus(): void
     {
-        $this->status = !$this->status;
+        $this->status = $this->isActive() ? self::STATUS_INACTIVE : self::STATUS_ACTIVE;
+    }
+
+    /**
+     * Активен ли сам раздел (без учёта предков — их проверяет {@see TaxonomyQuery::visible()}).
+     */
+    public function isActive(): bool
+    {
+        return (int)$this->status === self::STATUS_ACTIVE;
     }
 
     public function countPostsByMainTaxonomy()

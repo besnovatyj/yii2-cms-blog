@@ -8,7 +8,7 @@
 namespace Besnovatyj\Blog\widgets;
 
 use Exception;
-use Besnovatyj\Blog\readModels\PostReadRepository;
+use Besnovatyj\Blog\repositories\PostRepository;
 use yii\base\Widget;
 use Besnovatyj\Blog\Module;
 
@@ -18,7 +18,7 @@ class BackendDashboardPostWidget extends Widget
     public $blankImgUrl = '#';
     private $repository;
 
-    public function __construct(PostReadRepository $repository, $config = [])
+    public function __construct(PostRepository $repository, $config = [])
     {
         parent::__construct($config);
         $this->repository = $repository;

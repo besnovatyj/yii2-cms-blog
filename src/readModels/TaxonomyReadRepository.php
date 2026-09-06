@@ -12,6 +12,19 @@ use Besnovatyj\Contracts\search\SearchDocument;
 use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use yii\helpers\ArrayHelper;
 
+/**
+ * Чтение разделов блога ДЛЯ ФРОНТЕНДА.
+ *
+ * Отдаёт только видимые разделы: опубликованные и не спрятанные ни одним из предков
+ * (см. {@see \Besnovatyj\Blog\entities\queries\TaxonomyQuery::visible()}). Скрытый раздел не
+ * должен попадать ни в меню виджета, ни в выдачу поиска, ни открываться по прямой ссылке.
+ *
+ * Выборки без фильтра публикации, нужные админке и построению URL, — в
+ * {@see \Besnovatyj\Blog\repositories\TaxonomyRepository}.
+ *
+ * Исключение — {@see pathTo()}: он собирает ЧПУ-путь по дереву и обязан работать для любого
+ * раздела, иначе в админке не построить ссылку на скрытую страницу.
+ */
 class TaxonomyReadRepository
 {
     private TreeQueryScope $treeScope;
@@ -26,17 +39,17 @@ class TaxonomyReadRepository
      */
     public function getAll(): array
     {
-        return Taxonomy::find()->orderBy('lft')->all();
+        return Taxonomy::find()->visible()->orderBy('lft')->all();
     }
 
     public function getAllAsArray(): array
     {
-        return Taxonomy::find()->orderBy('lft')->asArray()->all();
+        return Taxonomy::find()->visible()->orderBy('lft')->asArray()->all();
     }
 
     public function find(int $id): ?Taxonomy
     {
-        return Taxonomy::find()->andWhere(['id' => $id])->one();
+        return Taxonomy::find()->visible()->andWhere(['id' => $id])->one();
     }
 
     /**
@@ -45,7 +58,7 @@ class TaxonomyReadRepository
      */
     public function findBySlug(string $slug): ?Taxonomy
     {
-        return Taxonomy::find()->andWhere(['slug' => $slug])->one();
+        return Taxonomy::find()->visible()->andWhere(['slug' => $slug])->one();
     }
 
     /**
@@ -64,16 +77,15 @@ class TaxonomyReadRepository
     /**
      * Разделы блога для сквозного поиска.
      *
-     * Фильтра по статусу здесь нет намеренно: фронтенд блога тоже показывает все таксономии
-     * (колонка `status` во фронтовых выборках не участвует), а индексировать нужно ровно то, что
-     * посетитель и так может открыть. Если во фронте появится фильтр публикации — его нужно
-     * повторить и здесь, иначе в выдачу попадут скрытые разделы.
+     * В индекс идут только видимые разделы — те же, что показывает фронтенд: раздел опубликован
+     * и не спрятан ни одним из предков. Скрытый раздел не должен находиться поиском, иначе
+     * снятие с публикации перестаёт что-либо значить.
      *
      * @return iterable<SearchDocument>
      */
     public function searchDocuments(): iterable
     {
-        $query = Taxonomy::find()->orderBy(['id' => SORT_ASC]);
+        $query = Taxonomy::find()->visible()->orderBy(['id' => SORT_ASC]);
 
         /** @var Taxonomy $taxonomy */
         foreach ($query->each(100) as $taxonomy) {
@@ -90,7 +102,7 @@ class TaxonomyReadRepository
 
     public function getTreeWithSubsOf(?Taxonomy $taxonomy = null): array
     { // TODO - JOIN - blog_posts - count()
-        $query = Taxonomy::find()->orderBy('lft');
+        $query = Taxonomy::find()->visible()->orderBy('lft');
         if ($taxonomy) {
             $parents = $this->treeScope->parentsQuery($taxonomy)->all();
             $criteria = ['or', ['depth' => 2]];

@@ -11,7 +11,7 @@ use DomainException;
 use Besnovatyj\Blog\entities\Tag;
 use Besnovatyj\Blog\forms\backend\search\TagSearch;
 use Besnovatyj\Blog\forms\backend\TagForm;
-use Besnovatyj\Blog\readModels\PostReadRepository;
+use Besnovatyj\Blog\repositories\PostRepository;
 use Besnovatyj\Blog\services\manage\TagManageService;
 use Throwable;
 use Yii;
@@ -34,7 +34,7 @@ class TagController extends \yii\web\Controller
         $id,
         $module,
         TagManageService $service,
-        PostReadRepository $posts,
+        PostRepository $posts,
         $config = [])
     {
         parent::__construct($id, $module, $config);

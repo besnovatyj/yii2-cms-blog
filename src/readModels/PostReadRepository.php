@@ -19,6 +19,15 @@ use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\db\ActiveQuery;
 
+/**
+ * Чтение постов ДЛЯ ФРОНТЕНДА.
+ *
+ * Каждый метод обязан отдавать только то, что доступно анонимному посетителю: пост опубликован
+ * и лежит в видимом разделе (см. {@see \Besnovatyj\Blog\entities\queries\PostQuery::visible()}).
+ * Выборки для админки, которым положено видеть черновики и скрытые разделы, живут в
+ * {@see \Besnovatyj\Blog\repositories\PostRepository} — смешивать их здесь нельзя: один и тот же
+ * метод на два контекста рано или поздно утекает скрытым контентом на публичную страницу.
+ */
 class PostReadRepository
 {
     private TreeQueryScope $treeScope;
@@ -30,17 +39,17 @@ class PostReadRepository
 
     public function count(): int
     {
-        return Post::find()->active()->count();
+        return Post::find()->visible()->count();
     }
 
     public function getAllByRange($offset, $limit): array
     {
-        return Post::find()->active()->orderBy(['id' => SORT_ASC])->limit($limit)->offset($offset)->all();
+        return Post::find()->visible()->orderBy(['id' => SORT_ASC])->limit($limit)->offset($offset)->all();
     }
 
     public function getAll(): DataProviderInterface
     {
-        $query = Post::find()->active()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
+        $query = Post::find()->visible()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
         return $this->getProvider($query);
     }
 
@@ -51,7 +60,7 @@ class PostReadRepository
      */
     public function search(SearchForm $form): DataProviderInterface
     {
-        $query = Post::find()->active()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
+        $query = Post::find()->visible()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
 
         $text = trim((string)$form->text);
         if ($text !== '') {
@@ -67,7 +76,7 @@ class PostReadRepository
 
     public function getAllByTaxonomy(Taxonomy $taxonomy): DataProviderInterface
     {
-        $query = Post::find()->alias('p')->active('p')->orderBy(['pinned' => SORT_DESC])->with('taxonomy');
+        $query = Post::find()->alias('p')->visible('p')->orderBy(['pinned' => SORT_DESC])->with('taxonomy');
         $ids = $this->treeScope->descendantIds($taxonomy, andSelf: true);
         $query->joinWith(['taxonomyAssignments ta'], false);
         $query->andWhere(['or', ['p.taxonomy_id' => $ids], ['ta.taxonomy_id' => $ids]]);
@@ -77,7 +86,7 @@ class PostReadRepository
 
     public function getAllByTag(Tag $tag): DataProviderInterface
     {
-        $query = Post::find()->alias('p')->with('taxonomy');
+        $query = Post::find()->alias('p')->visible('p')->with('taxonomy');
         $query->joinWith(['tagAssignments ta'], false);
         $query->andWhere(['ta.tag_id' => $tag->id]);
         $query->groupBy('p.id');
@@ -86,8 +95,7 @@ class PostReadRepository
 
     public function getAllByOtherTaxonomy(Taxonomy $taxonomy): DataProviderInterface
     {
-        // для backend ищем и неактивные тоже
-        $query = Post::find()->alias('p')->with('taxonomy');
+        $query = Post::find()->alias('p')->visible('p')->with('taxonomy');
         $query->joinWith(['taxonomyAssignments ta'], false);
         $query->andWhere(['ta.taxonomy_id' => $taxonomy->id]);
         $query->groupBy('p.id');
@@ -96,37 +104,32 @@ class PostReadRepository
 
     public function getLast($limit): array
     {
-        return Post::find()->active()->with('taxonomy')->orderBy(['id' => SORT_DESC])->limit($limit)->all();
+        return Post::find()->visible()->with('taxonomy')->orderBy(['id' => SORT_DESC])->limit($limit)->all();
     }
 
     public function getLastUpdated($limit): array
     {
-        return Post::find()->orderBy(['updated_at' => SORT_DESC])->limit($limit)->all();
+        return Post::find()->visible()->orderBy(['updated_at' => SORT_DESC])->limit($limit)->all();
     }
 
     public function getPopularByComments($limit): array
     {
-        return Post::find()->active()->with('taxonomy')->orderBy(['comments_count' => SORT_DESC])->limit($limit)->all();
+        return Post::find()->visible()->with('taxonomy')->orderBy(['comments_count' => SORT_DESC])->limit($limit)->all();
     }
 
     public function getPopularByViews($limit): array
     {
-        return Post::find()->active()->orderBy(['views' => SORT_DESC])->limit($limit)->all();
+        return Post::find()->visible()->orderBy(['views' => SORT_DESC])->limit($limit)->all();
     }
 
     public function getPinned(): array
     {
-        return Post::find()->andWhere(['pinned' => Post::PINNED])->all();
-    }
-
-    public function getDrafted(): array
-    {
-        return Post::find()->andWhere(['status' => Post::STATUS_DRAFT])->all();
+        return Post::find()->visible()->andWhere(['pinned' => Post::PINNED])->all();
     }
 
     public function find($id): ?Post
     {
-        $post = Post::find()->active()->andWhere(['id' => $id])->one();
+        $post = Post::find()->visible()->andWhere(['id' => $id])->one();
         if ($post instanceof Post) {
             return $post;
         }
@@ -144,7 +147,7 @@ class PostReadRepository
      */
     public function searchDocuments(): iterable
     {
-        $query = Post::find()->active()
+        $query = Post::find()->visible()
             ->with(['tags', 'taxonomy'])
             ->orderBy(['id' => SORT_ASC]);
 
