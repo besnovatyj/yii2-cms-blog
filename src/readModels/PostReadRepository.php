@@ -168,7 +168,10 @@ class PostReadRepository
                 text: (string)$post->content,
                 keywords: implode(' ', $keywords),
                 excerpt: $post->description,
-                date: (int)$post->created_at,
+                // `created_at` — колонка DATETIME, а контракт ждёт Unix-timestamp. Приведение
+                // (int) молча давало год («2020-05-14 12:00:00» → 2020), то есть 1 января 1970-го
+                // в каждой карточке выдачи и бессмысленную сортировку по свежести.
+                date: $post->created_at === null ? null : (strtotime((string)$post->created_at) ?: null),
                 image: $post->getThumbUrl('photo', 'blog_list'),
                 // Закреплённые посты и в поиске должны идти чуть выше при равной релевантности.
                 boost: (int)$post->pinned === Post::PINNED ? 1.3 : 1.0,
