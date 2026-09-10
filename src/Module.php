@@ -18,6 +18,11 @@ use Besnovatyj\Contracts\menu\MenuTarget;
 use Besnovatyj\Contracts\menu\MenuTargetProvider;
 use Besnovatyj\Contracts\search\SearchableProvider;
 use Besnovatyj\Contracts\search\SearchSource;
+use Besnovatyj\Contracts\sitemap\ChangeFrequency;
+use Besnovatyj\Contracts\sitemap\SitemapFreshness;
+use Besnovatyj\Contracts\sitemap\SitemapProvider;
+use Besnovatyj\Contracts\sitemap\SitemapSection;
+use Besnovatyj\Contracts\sitemap\SitemapUrl;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\readModels\PostReadRepository;
 use Besnovatyj\Blog\readModels\TaxonomyReadRepository;
@@ -27,7 +32,8 @@ use Yii;
 class Module extends CmsModule implements
     DeclaresModule, ProvidesAdminMenu, ProvidesBootstrap,
     ProvidesDependencies, ProvidesDirectories,
-    ProvidesMigrations, ProvidesOptions, MenuTargetProvider, SearchableProvider
+    ProvidesMigrations, ProvidesOptions, MenuTargetProvider, SearchableProvider,
+    SitemapProvider, SitemapFreshness
 {
     public const bool EDITABLE = true;
     public const string VERSION = '1.0.0';
@@ -118,5 +124,84 @@ class Module extends CmsModule implements
             'blog.taxonomy' => (new TaxonomyReadRepository())->searchDocuments(),
             default => [],
         };
+    }
+
+    /**
+     * Разделы карты сайта. Реализация {@see SitemapProvider}; вызывается только модулем карты,
+     * если он установлен.
+     *
+     * Посты объявлены «только для XML»: их сотни, и на человеческой карте они превратили бы
+     * оглавление сайта в ленту. Читателю там нужны разделы блога, а роботу — все адреса.
+     *
+     * @return SitemapSection[]
+     */
+    public function sitemapSections(): array
+    {
+        return [
+            new SitemapSection(
+                key: 'blog.taxonomy',
+                label: 'Блог',
+                changeFrequency: ChangeFrequency::Daily,
+                priority: 0.6,
+                order: 30,
+                icon: 'bi bi-diagram-3',
+            ),
+            new SitemapSection(
+                key: 'blog.post',
+                label: 'Статьи блога',
+                changeFrequency: ChangeFrequency::Weekly,
+                priority: 0.6,
+                inHtmlMap: false,
+                order: 40,
+                icon: 'bi bi-newspaper',
+            ),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sitemapUrls(string $section): iterable
+    {
+        return match ($section) {
+            'blog.post' => (new PostReadRepository())->sitemapUrls(),
+            'blog.taxonomy' => $this->taxonomySitemapUrls(),
+            default => [],
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Отпечаток есть только у постов: у разделов блога нет колонок времени
+     * (см. {@see TaxonomyReadRepository::sitemapUrls()}).
+     */
+    public function sitemapRevision(string $section): ?string
+    {
+        return match ($section) {
+            'blog.post' => (new PostReadRepository())->sitemapRevision(),
+            default => null,
+        };
+    }
+
+    /**
+     * Разделы блога, а перед ними — сам список блога.
+     *
+     * Список — корень этой ветки и для робота, и для читателя: на человеческой карте он открывает
+     * блок, в XML это обычный адрес с высоким приоритетом. Отдельным разделом карты его заводить
+     * незачем — раздел из одного адреса только засоряет и настройки, и индекс файлов.
+     *
+     * @return iterable<SitemapUrl>
+     */
+    private function taxonomySitemapUrls(): iterable
+    {
+        yield new SitemapUrl(
+            route: '/Blog/post/index',
+            title: 'Блог',
+            changeFrequency: ChangeFrequency::Daily,
+            priority: 0.9,
+        );
+
+        yield from (new TaxonomyReadRepository())->sitemapUrls();
     }
 }

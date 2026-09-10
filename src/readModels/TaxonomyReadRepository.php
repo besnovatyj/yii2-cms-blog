@@ -9,6 +9,7 @@ namespace Besnovatyj\Blog\readModels;
 
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Contracts\search\SearchDocument;
+use Besnovatyj\Contracts\sitemap\SitemapUrl;
 use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use yii\helpers\ArrayHelper;
 
@@ -83,6 +84,33 @@ class TaxonomyReadRepository
      *
      * @return iterable<SearchDocument>
      */
+    /**
+     * Видимые разделы блога для карты сайта.
+     *
+     * Обход в порядке дерева (`tree`, `lft`) и глубина узла отдаются как есть: человеческая карта
+     * рисует по ним отступ, а строить вложенные списки провайдеру не приходится — это забота
+     * представления.
+     *
+     * Отпечатка свежести у разделов нет: колонок времени в дереве не заведено, а суррогат вроде
+     * `MAX(rgt)` не заметил бы переименования. Разделов немного, полный обход дёшев.
+     *
+     * @return iterable<SitemapUrl>
+     */
+    public function sitemapUrls(): iterable
+    {
+        $query = Taxonomy::find()->visible()->orderBy(['tree' => SORT_ASC, 'lft' => SORT_ASC]);
+
+        /** @var Taxonomy $taxonomy */
+        foreach ($query->each(200) as $taxonomy) {
+            yield new SitemapUrl(
+                route: '/Blog/post/taxonomy',
+                params: ['slug' => $taxonomy->slug],
+                title: (string)$taxonomy->name,
+                depth: (int)$taxonomy->depth,
+            );
+        }
+    }
+
     public function searchDocuments(): iterable
     {
         $query = Taxonomy::find()->visible()->orderBy(['id' => SORT_ASC]);

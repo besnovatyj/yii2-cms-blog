@@ -15,6 +15,7 @@ use Besnovatyj\Blog\entities\Tag;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\forms\frontend\search\SearchForm;
 use Besnovatyj\Contracts\search\SearchDocument;
+use Besnovatyj\Contracts\sitemap\SitemapUrl;
 use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\db\ActiveQuery;
@@ -145,6 +146,52 @@ class PostReadRepository
      *
      * @return iterable<SearchDocument>
      */
+    /**
+     * Опубликованные посты для карты сайта.
+     *
+     * Тот же инвариант, что у поиска, — только публичное. Отличается набор полей: карте нужна дата
+     * ИЗМЕНЕНИЯ (`updated_at`), по которой краулер решает, перечитывать ли страницу, а поиску — текст
+     * и дата публикации. Поэтому два тонких метода поверх одной выборки, а не один «универсальный».
+     *
+     * Свежие посты идут первыми: если карта раздела не поместится в один файл, в первой части
+     * окажется самое новое — краулер увидит его раньше.
+     *
+     * @return iterable<SitemapUrl>
+     */
+    public function sitemapUrls(): iterable
+    {
+        $query = Post::find()->visible()->orderBy(['id' => SORT_DESC]);
+
+        /** @var Post $post */
+        foreach ($query->each(200) as $post) {
+            yield new SitemapUrl(
+                route: '/Blog/post/view',
+                params: ['id' => (int)$post->id],
+                title: (string)$post->title,
+                // updated_at — колонка DATETIME, а контракт ждёт Unix-timestamp.
+                lastModified: $post->updated_at === null ? null : (strtotime((string)$post->updated_at) ?: null),
+                // Закреплённый пост — витрина блога, ему уместен вес выше рядового.
+                priority: (int)$post->pinned === Post::PINNED ? 0.8 : null,
+            );
+        }
+    }
+
+    /**
+     * Отпечаток состояния постов для карты сайта: сколько их и когда правили последний раз.
+     *
+     * Одного `MAX(updated_at)` мало — он не замечает удаления поста, а удалённый пост обязан
+     * исчезнуть из карты. Пара «сколько + когда» это закрывает и стоит одного запроса.
+     */
+    public function sitemapRevision(): string
+    {
+        $row = Post::find()->visible()
+            ->select(['total' => 'COUNT(*)', 'latest' => 'MAX(updated_at)'])
+            ->asArray()
+            ->one();
+
+        return ((string)($row['total'] ?? '0')) . ':' . ((string)($row['latest'] ?? ''));
+    }
+
     public function searchDocuments(): iterable
     {
         $query = Post::find()->visible()
