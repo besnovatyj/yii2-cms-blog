@@ -33,8 +33,9 @@ class TaxonomyQuery extends ActiveQuery
      * прямой ссылке, хотя из навигации он исчез. Проверка идёт по ключам Nested Sets одним
      * подзапросом: у видимого узла не должно существовать предка со снятой публикацией.
      *
-     * Виртуальный корень дерева (`depth = 0`) из проверки исключён: он служебный, его статус
-     * не редактируется и скрывать по нему весь блог нельзя.
+     * Проверяются предки ЛЮБОГО уровня, включая корневые (`depth = 0`): корень — такой же
+     * полноценный раздел с редактируемым статусом, а не служебный контейнер (прежнее исключение
+     * корня было наследием старой схемы дерева и оставляло ветку скрытого корня видимой).
      */
     public function visible(?string $alias = null): static
     {
@@ -47,7 +48,6 @@ class TaxonomyQuery extends ActiveQuery
             ->where(new Expression(
                 "anc.[[tree]] = {$self}.[[tree]] AND anc.[[lft]] < {$self}.[[lft]] AND anc.[[rgt]] > {$self}.[[rgt]]",
             ))
-            ->andWhere(['>', 'anc.depth', 0])
             ->andWhere(['<>', 'anc.status', Taxonomy::STATUS_ACTIVE]);
 
         return $this->active($alias)->andWhere(['not exists', $hiddenAncestor]);

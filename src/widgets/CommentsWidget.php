@@ -32,7 +32,11 @@ class CommentsWidget extends Widget
 
         $form = new CommentForm();
 
+        // Только прошедшие модерацию: связь `getComments()` отдаёт все статусы, включая
+        // ожидающие проверки (`STATUS_DRAFT`, он же статус по умолчанию у нового комментария)
+        // и удалённые. Без этого фильтра любой отправленный текст сразу виден на странице.
         $comments = $this->post->getComments()
+            ->active()
             ->orderBy(['parent_id' => SORT_ASC, 'id' => SORT_ASC])
             ->all();
 
