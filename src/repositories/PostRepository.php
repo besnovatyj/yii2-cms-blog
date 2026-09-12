@@ -8,7 +8,6 @@
 namespace Besnovatyj\Blog\repositories;
 
 use Besnovatyj\Blog\entities\Post;
-use Besnovatyj\Blog\entities\Tag;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\repositories\NotFoundException;
 use Throwable;
@@ -57,23 +56,6 @@ class PostRepository
         if (!$post->delete()) {
             throw new \RuntimeException('Removing error.');
         }
-    }
-
-    /**
-     * Посты тега — для админки: без фильтра публикации и видимости раздела.
-     *
-     * Фронтовый аналог — {@see \Besnovatyj\Blog\readModels\PostReadRepository::getAllByTag()},
-     * он показывает только доступное анонимному посетителю. Методы намеренно разные: админка
-     * обязана видеть скрытое, фронт — не должен.
-     */
-    public function getAllByTag(Tag $tag): DataProviderInterface
-    {
-        $query = Post::find()->alias('p')->with('taxonomy');
-        $query->joinWith(['tagAssignments ta'], false);
-        $query->andWhere(['ta.tag_id' => $tag->id]);
-        $query->groupBy('p.id');
-
-        return $this->getProvider($query);
     }
 
     /**

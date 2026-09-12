@@ -23,6 +23,9 @@ use Besnovatyj\Contracts\sitemap\SitemapFreshness;
 use Besnovatyj\Contracts\sitemap\SitemapProvider;
 use Besnovatyj\Contracts\sitemap\SitemapSection;
 use Besnovatyj\Contracts\sitemap\SitemapUrl;
+use Besnovatyj\Contracts\tags\TaggableProvider;
+use Besnovatyj\Contracts\tags\TagSource;
+use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\readModels\PostReadRepository;
 use Besnovatyj\Blog\readModels\TaxonomyReadRepository;
@@ -33,7 +36,7 @@ class Module extends CmsModule implements
     DeclaresModule, ProvidesAdminMenu, ProvidesBootstrap,
     ProvidesDependencies, ProvidesDirectories,
     ProvidesMigrations, ProvidesOptions, MenuTargetProvider, SearchableProvider,
-    SitemapProvider, SitemapFreshness
+    SitemapProvider, SitemapFreshness, TaggableProvider
 {
     public const bool EDITABLE = true;
     public const string VERSION = '1.0.0';
@@ -122,6 +125,41 @@ class Module extends CmsModule implements
         return match ($type) {
             'blog.post' => (new PostReadRepository())->searchDocuments(),
             'blog.taxonomy' => (new TaxonomyReadRepository())->searchDocuments(),
+            default => [],
+        };
+    }
+
+    /**
+     * Посты — участники общего словаря тегов. Реализация {@see TaggableProvider}; вызывается модулем
+     * тегов для страницы `/tag/<slug>` и облака. Ключ — тот же `blog.post`, что у поиска и карты.
+     *
+     * @return TagSource[]
+     */
+    public function tagSources(): array
+    {
+        return [
+            new TagSource(Post::tagType(), 'Статьи блога', 'bi bi-newspaper'),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function visibleTaggedIds(string $type, array $ids): array
+    {
+        return match ($type) {
+            Post::tagType() => (new PostReadRepository())->visibleIds($ids),
+            default => [],
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function taggedItems(string $type, array $ids): iterable
+    {
+        return match ($type) {
+            Post::tagType() => (new PostReadRepository())->taggedItems($ids),
             default => [],
         };
     }

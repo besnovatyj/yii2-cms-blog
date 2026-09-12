@@ -68,27 +68,6 @@ return [
         ],
     ],
 
-    // Tags
-    [
-        'label' => 'Tags',
-        'iconClass' => 'bi bi-tags me-1',
-        'url' => ['/Blog/backend/tag/index'],
-        'active' => static function () {
-            return str_contains(Yii::$app->request->url, '/Blog/backend/tag');
-        },
-        '_meta' => [
-            'placements' => [
-                [
-                    'location' => 'left-sidebar',
-                    'group' => 'Blog',
-                    'groupIcon' => 'bi bi-book',
-                    'priority' => 100,
-                    'groupPriority' => 100,
-                ],
-            ],
-        ],
-    ],
-
     // Parser
     [
         'label' => 'Parser',

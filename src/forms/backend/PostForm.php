@@ -11,7 +11,7 @@ use Besnovatyj\Helpers\StringHelper;
 use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Forms\CompositeForm;
 use Besnovatyj\Meta\MetaForm;
-use Besnovatyj\Blog\forms\backend\TagsForm;
+use Besnovatyj\Tags\forms\backend\TagsForm;
 use Besnovatyj\Blog\forms\backend\TaxonomiesForm;
 use yii\web\UploadedFile;
 
@@ -37,7 +37,7 @@ class PostForm extends CompositeForm
             $this->comments_allowed = $post->comments_allowed;
             $this->taxonomies = new TaxonomiesForm($post);
             $this->meta = new MetaForm($post->meta);
-            $this->tags = new TagsForm($post);
+            $this->tags = new TagsForm($post->tags);
         } else {
             $this->taxonomies = new TaxonomiesForm();
             $this->meta = new MetaForm();

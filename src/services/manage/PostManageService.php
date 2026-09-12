@@ -9,31 +9,29 @@ namespace Besnovatyj\Blog\services\manage;
 
 use DateTimeImmutable;
 use Besnovatyj\Blog\entities\Post;
-use Besnovatyj\Blog\entities\Tag;
-use Besnovatyj\Blog\entities\TagAssignment;
 use Besnovatyj\Blog\entities\taxonomy\TaxonomyAssignment;
 use Besnovatyj\Blog\forms\backend\PostForm;
 use Besnovatyj\Blog\repositories\PostRepository;
-use Besnovatyj\Blog\repositories\TagRepository;
 use Besnovatyj\Blog\repositories\TaxonomyRepository;
 use Besnovatyj\Meta\Meta;
+use Besnovatyj\Tags\services\TagAssigner;
 use Throwable;
 use Yii;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
 use yii\helpers\ArrayHelper;
-use yii\helpers\Inflector;
 
 class PostManageService
 {
     private PostRepository $posts;
     private TaxonomyRepository $taxonomies;
-    private TagRepository $tags;
+    /** Теги — общий словарь модуля Tags: связи пишет только он, slug из имени выводит его форма. */
+    private TagAssigner $tags;
 
     public function __construct(
         PostRepository     $posts,
         TaxonomyRepository $taxonomies,
-        TagRepository      $tags
+        TagAssigner        $tags
     ) {
         $this->posts = $posts;
         $this->taxonomies = $taxonomies;
@@ -74,7 +72,7 @@ class PostManageService
             $this->posts->save($post);
 
             $this->assignTaxonomies($post, $form->taxonomies->others);
-            $this->assignTags($post, $form->tags->newTagsNames);
+            $this->tags->sync(Post::tagType(), (int)$post->id, $form->tags->items);
 
             $transaction->commit();
             return $post;
@@ -116,10 +114,9 @@ class PostManageService
             $this->posts->save($post);
 
             $this->revokeTaxonomies($post);
-            $this->revokeTags($post);
 
             $this->assignTaxonomies($post, $form->taxonomies->others);
-            $this->assignTags($post, $form->tags->newTagsNames);
+            $this->tags->sync(Post::tagType(), (int)$post->id, $form->tags->items);
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -158,7 +155,8 @@ class PostManageService
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $this->revokeTaxonomies($post);
-            $this->revokeTags($post);
+            // Внешнего ключа на пост у общих связей тегов нет — снимаем явно, иначе останутся сироты.
+            $this->tags->detachAll(Post::tagType(), (int)$post->id);
             $this->removeComments($post);
 
             $this->posts->remove($post);
@@ -209,43 +207,6 @@ class PostManageService
     private function revokeTaxonomies(Post $post): void
     {
         TaxonomyAssignment::deleteAll(['post_id' => $post->id]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function assignTags(Post $post, array $tagNames): void
-    {
-        foreach ($tagNames as $tagName) {
-            $slug = Inflector::slug($tagName);
-
-            $tag = $this->tags->findBySlug($slug);
-            if (!$tag) {
-                $tag = Tag::create($tagName, $slug);
-                $this->tags->save($tag);
-            }
-
-            $exists = TagAssignment::find()
-                ->andWhere(['post_id' => $post->id, 'tag_id' => $tag->id])
-                ->exists();
-
-            if ($exists) {
-                continue;
-            }
-
-            $assignment = new TagAssignment();
-            $assignment->post_id = $post->id;
-            $assignment->tag_id = $tag->id;
-
-            if (!$assignment->save()) {
-                throw new Exception('Failed to save tag assignment.');
-            }
-        }
-    }
-
-    private function revokeTags(Post $post): void
-    {
-        TagAssignment::deleteAll(['post_id' => $post->id]);
     }
 
     /**

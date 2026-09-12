@@ -4,7 +4,7 @@
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
 
-use Besnovatyj\Blog\entities\Tag;
+use Besnovatyj\Tags\entities\Tag;
 use yii\base\Module;
 use yii\data\DataProviderInterface;
 use yii\web\View;

@@ -9,7 +9,7 @@ namespace Besnovatyj\Blog\controllers\frontend;
 use Besnovatyj\Blog\forms\frontend\CommentForm;
 use Besnovatyj\Blog\readModels\TaxonomyReadRepository;
 use Besnovatyj\Blog\readModels\PostReadRepository;
-use Besnovatyj\Blog\readModels\TagReadRepository;
+use Besnovatyj\Tags\readModels\TagReadRepository;
 use Besnovatyj\Blog\services\CommentService;
 use Yii;
 

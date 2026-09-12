@@ -13,6 +13,9 @@ use Besnovatyj\Blog\entities\taxonomy\TaxonomyAssignment;
 use Besnovatyj\Helpers\FilesystemHelper;
 use Besnovatyj\Meta\Meta;
 use Besnovatyj\Meta\MetaBehavior;
+use Besnovatyj\Tags\entities\Tag;
+use Besnovatyj\Tags\entities\TagAssignment;
+use Besnovatyj\Tags\entities\TaggableEntityTrait;
 use Besnovatyj\Upload\heap\ThumbnailMode;
 use Besnovatyj\Upload\heap\ThumbnailProfile;
 use Besnovatyj\Upload\heap\UploadBehavior;
@@ -50,6 +53,8 @@ use yii\web\UploadedFile;
  */
 class Post extends ActiveRecord
 {
+    use TaggableEntityTrait;
+
     public const int STATUS_DRAFT = 0;
     public const int STATUS_ACTIVE = 1;
 
@@ -173,17 +178,16 @@ class Post extends ActiveRecord
             ->count();
     }
 
+    /**
+     * Ключ поста в общем словаре тегов (модуль Tags); тот же — в контрактах поиска и карты сайта.
+     * Связи `tagAssignments`/`tags` даёт {@see TaggableEntityTrait}.
+     */
+    public static function tagType(): string
+    {
+        return 'blog.post';
+    }
+
     // <editor-fold desc="Relations">
-
-    public function getTagAssignments(): ActiveQuery
-    {
-        return $this->hasMany(TagAssignment::class, ['post_id' => 'id']);
-    }
-
-    public function getTags(): ActiveQuery
-    {
-        return $this->hasMany(Tag::class, ['id' => 'tag_id'])->via('tagAssignments');
-    }
 
     public function getComments(): ActiveQuery
     {

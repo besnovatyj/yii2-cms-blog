@@ -39,8 +39,9 @@ return [
             'rules' => [
                 'blog'                                    => 'Blog/post/index',
                 'blog/search'                             => 'Blog/search/index',
-                'blog/tag/<slug:[\w\-]+>/<page:\d+>'      => 'Blog/post/tag', // <page> — пагинация
-                'blog/tag/<slug:[\w\-]+>'                 => 'Blog/post/tag',
+                // slug начинается с буквы — конвенция SlugValidator общего словаря тегов (модуль Tags)
+                'blog/tag/<slug:[a-z][\w\-]*>/<page:\d+>'  => 'Blog/post/tag', // <page> — пагинация
+                'blog/tag/<slug:[a-z][\w\-]*>'             => 'Blog/post/tag',
                 'blog/<id:\d+>'                           => 'Blog/post/view',
                 'blog/<id:\d+>/comment'                   => 'Blog/post/comment',
                 // Дерево таксономий (вложенные слаги, 301-нормализация) — класс-правило вместо строковых

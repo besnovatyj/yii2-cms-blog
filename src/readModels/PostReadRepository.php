@@ -11,11 +11,12 @@ use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use DomainException;
 use Exception;
 use Besnovatyj\Blog\entities\Post;
-use Besnovatyj\Blog\entities\Tag;
+use Besnovatyj\Tags\entities\Tag;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\forms\frontend\search\SearchForm;
 use Besnovatyj\Contracts\search\SearchDocument;
 use Besnovatyj\Contracts\sitemap\SitemapUrl;
+use Besnovatyj\Contracts\tags\TaggedItem;
 use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\db\ActiveQuery;
@@ -222,6 +223,53 @@ class PostReadRepository
                 image: $post->getThumbUrl('photo', 'blog_list'),
                 // Закреплённые посты и в поиске должны идти чуть выше при равной релевантности.
                 boost: (int)$post->pinned === Post::PINNED ? 1.3 : 1.0,
+            );
+        }
+    }
+
+    /**
+     * Из переданных id — посты, доступные анониму (для счётчиков страницы тега и облака).
+     *
+     * @param int[] $ids
+     * @return int[]
+     */
+    public function visibleIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+        return array_map('intval', Post::find()->visible()->andWhere(['id' => $ids])->select('id')->column());
+    }
+
+    /**
+     * Карточки постов для страницы тега модуля Tags — только видимые, в порядке `$ids`.
+     *
+     * @param int[] $ids
+     * @return iterable<TaggedItem>
+     */
+    public function taggedItems(array $ids): iterable
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        /** @var Post[] $posts */
+        $posts = Post::find()->visible()->andWhere(['id' => $ids])->indexBy('id')->all();
+
+        foreach ($ids as $id) {
+            $post = $posts[$id] ?? null;
+            if ($post === null) {
+                continue;
+            }
+            yield new TaggedItem(
+                type: Post::tagType(),
+                entityId: (int)$post->id,
+                route: '/Blog/post/view',
+                params: ['id' => (int)$post->id],
+                title: (string)$post->title,
+                excerpt: $post->description !== null && $post->description !== '' ? (string)$post->description : null,
+                date: $post->created_at === null ? null : (strtotime((string)$post->created_at) ?: null),
+                image: $post->getThumbUrl('photo', 'blog_list'),
             );
         }
     }
