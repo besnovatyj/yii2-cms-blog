@@ -7,7 +7,7 @@
 declare(strict_types=1);
 
 use Besnovatyj\Blog\Module;
-use Besnovatyj\Blog\urls\TaxonomyUrlRule;
+use Besnovatyj\Validators\SlugValidator;
 
 /**
  * Yii2-конфиг модуля для движка yiisoft/config (группа `common` — общий для всех приложений).
@@ -37,19 +37,15 @@ return [
     'components' => [
         'frontendUrlManager' => [
             'rules' => [
-                'blog'                                    => 'Blog/post/index',
-                // slug начинается с буквы — конвенция SlugValidator общего словаря тегов (модуль Tags)
-                'blog/tag/<slug:[a-z][\w\-]*>/<page:\d+>'  => 'Blog/post/tag', // <page> — пагинация
-                'blog/tag/<slug:[a-z][\w\-]*>'             => 'Blog/post/tag',
-                'blog/<id:\d+>'                           => 'Blog/post/view',
-                'blog/<id:\d+>/comment'                   => 'Blog/post/comment',
-                // Дерево таксономий (вложенные слаги, 301-нормализация) — класс-правило вместо строковых
-                // 'blog/<slug>'. Должно идти ПОСЛЕ специфичных выше (его regex ловит и blog/search, blog/tag/*).
-                // Пагинация — через ?page= (стандартный Pagination), не сегментом пути.
-                //['class' => TaxonomyUrlRule::class],
+                'blog' => 'Blog/post/index',
+                'blog/tag/<slug:' . SlugValidator::SLUG_ANY . '>/<page:\d+>' => 'Blog/post/tag', // <page> — пагинация
+                'blog/tag/<slug:' . SlugValidator::SLUG_ANY . '>' => 'Blog/post/tag',
+                'blog/<id:\d+>' => 'Blog/post/view',
+                'blog/<id:\d+>/comment' => 'Blog/post/comment',
+                'blog/<slug:' . SlugValidator::SLUG_STRICT . '>' => 'Blog/post/taxonomy',
             ],
         ],
     ],
-    // L2-bootstrap: инвалидация кэша ЧПУ-путей таксономий при правках дерева (см. Bootstrap).
+    // L2-bootstrap: (см. Bootstrap).
     'bootstrap' => array_values(Module::bootstrapClasses()),
 ];

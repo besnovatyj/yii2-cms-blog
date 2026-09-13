@@ -1,6 +1,5 @@
 <?php
 
-
 /*
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
@@ -22,9 +21,6 @@ use yii\helpers\ArrayHelper;
  *
  * Выборки без фильтра публикации, нужные админке и построению URL, — в
  * {@see \Besnovatyj\Blog\repositories\TaxonomyRepository}.
- *
- * Исключение — {@see pathTo()}: он собирает ЧПУ-путь по дереву и обязан работать для любого
- * раздела, иначе в админке не построить ссылку на скрытую страницу.
  */
 class TaxonomyReadRepository
 {
@@ -60,19 +56,6 @@ class TaxonomyReadRepository
     public function findBySlug(string $slug): ?Taxonomy
     {
         return Taxonomy::find()->visible()->andWhere(['slug' => $slug])->one();
-    }
-
-    /**
-     * ЧПУ-путь таксономии: слаги предков (без виртуального корня depth=0) и самого узла через «/».
-     * Используется {@see \Besnovatyj\Blog\urls\TaxonomyUrlRule} для разбора/генерации ЧПУ-адресов.
-     */
-    public function pathTo(Taxonomy $taxonomy): string
-    {
-        $nodes = $this->treeScope->parentsQuery($taxonomy, andSelf: true)
-            ->andWhere(['>', 'depth', 0])
-            ->all();
-
-        return implode('/', ArrayHelper::getColumn($nodes, 'slug'));
     }
 
     /**

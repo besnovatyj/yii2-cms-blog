@@ -1,6 +1,5 @@
 <?php
 
-
 /*
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
@@ -8,12 +7,9 @@
 namespace Besnovatyj\Blog\readModels;
 
 use Besnovatyj\TreeManager\Manager\TreeQueryScope;
-use DomainException;
-use Exception;
 use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Tags\entities\Tag;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
-use Besnovatyj\Blog\forms\frontend\search\SearchForm;
 use Besnovatyj\Contracts\search\SearchDocument;
 use Besnovatyj\Contracts\sitemap\SitemapUrl;
 use Besnovatyj\Contracts\tags\TaggedItem;
@@ -52,27 +48,6 @@ class PostReadRepository
     public function getAll(): DataProviderInterface
     {
         $query = Post::find()->visible()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
-        return $this->getProvider($query);
-    }
-
-    /**
-     * Простой полнотекстовый поиск по активным постам (title/description/content) через LIKE.
-     * Базовая реализация для фронтового поиска; пустой запрос возвращает все активные посты.
-     * Значение идёт в параметризованный `like`-предикат (экранируется), длина ограничена формой.
-     */
-    public function search(SearchForm $form): DataProviderInterface
-    {
-        $query = Post::find()->visible()->orderBy(['pinned' => SORT_DESC])->with(['taxonomy', 'tags']);
-
-        $text = trim((string)$form->text);
-        if ($text !== '') {
-            $query->andWhere(['or',
-                ['like', 'title', $text],
-                ['like', 'description', $text],
-                ['like', 'content', $text],
-            ]);
-        }
-
         return $this->getProvider($query);
     }
 

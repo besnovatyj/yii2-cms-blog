@@ -1,6 +1,5 @@
 <?php
 
-
 /*
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
@@ -8,11 +7,9 @@
 namespace Besnovatyj\Blog\repositories;
 
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
-use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use Throwable;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
-use yii\helpers\ArrayHelper;
 
 class TaxonomyRepository
 {
@@ -90,18 +87,4 @@ class TaxonomyRepository
         return Taxonomy::find()->andWhere(['id' => $id])->one();
     }
 
-    /**
-     * ЧПУ-путь раздела: слаги предков (без виртуального корня `depth = 0`) и самого узла через «/».
-     *
-     * Работает для любого раздела, включая скрытый: адрес обязан строиться и в админке.
-     */
-    public function pathTo(Taxonomy $taxonomy): string
-    {
-        $nodes = (new TreeQueryScope(Taxonomy::class))
-            ->parentsQuery($taxonomy, andSelf: true)
-            ->andWhere(['>', 'depth', 0])
-            ->all();
-
-        return implode('/', ArrayHelper::getColumn($nodes, 'slug'));
-    }
 }
