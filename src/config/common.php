@@ -38,7 +38,6 @@ return [
         'frontendUrlManager' => [
             'rules' => [
                 'blog'                                    => 'Blog/post/index',
-                'blog/search'                             => 'Blog/search/index',
                 // slug начинается с буквы — конвенция SlugValidator общего словаря тегов (модуль Tags)
                 'blog/tag/<slug:[a-z][\w\-]*>/<page:\d+>'  => 'Blog/post/tag', // <page> — пагинация
                 'blog/tag/<slug:[a-z][\w\-]*>'             => 'Blog/post/tag',
