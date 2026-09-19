@@ -9,7 +9,7 @@ return [
     'params' => [
         'iconClass' => 'bi bi-book',
 
-        'comments_allowed' => 'false',
+        'comments_allowed' => 0,
 
         'directories' => true, // Если для работы модуля необходимы директории для статики
 

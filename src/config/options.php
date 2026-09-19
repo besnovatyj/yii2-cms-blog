@@ -19,8 +19,8 @@ return [
         'inputOptions' => [
             'type' => 'dropdown',
             'items' => [
-                1 => 'Allow',
                 0 => 'Deny',
+                1 => 'Allow',
             ],
         ],
     ],
