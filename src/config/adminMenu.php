@@ -4,6 +4,9 @@
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
 
+use Besnovatyj\Contracts\adminMenu\AdminMenuLocation;
+use Besnovatyj\Contracts\adminMenu\AdminMenuPlacement;
+
 return [
     // Posts
     [
@@ -15,13 +18,13 @@ return [
         },
         '_meta' => [
             'placements' => [
-                [
-                    'location' => 'left-sidebar',
-                    'group' => 'Blog',
-                    'groupIcon' => 'bi bi-book',
-                    'priority' => 100,
-                    'groupPriority' => 100,
-                ],
+                new AdminMenuPlacement(
+                    location: AdminMenuLocation::LeftSidebar,
+                    group: 'Blog',
+                    groupIcon: 'bi bi-book',
+                    groupPriority: 100,
+                    priority: 100,
+                ),
             ],
         ],
     ],
@@ -36,13 +39,13 @@ return [
         },
         '_meta' => [
             'placements' => [
-                [
-                    'location' => 'left-sidebar',
-                    'group' => 'Blog',
-                    'groupIcon' => 'bi bi-book',
-                    'priority' => 100,
-                    'groupPriority' => 100,
-                ],
+                new AdminMenuPlacement(
+                    location: AdminMenuLocation::LeftSidebar,
+                    group: 'Blog',
+                    groupIcon: 'bi bi-book',
+                    groupPriority: 100,
+                    priority: 100,
+                ),
             ],
         ],
     ],
@@ -57,13 +60,13 @@ return [
         },
         '_meta' => [
             'placements' => [
-                [
-                    'location' => 'left-sidebar',
-                    'group' => 'Blog',
-                    'groupIcon' => 'bi bi-book',
-                    'priority' => 100,
-                    'groupPriority' => 100,
-                ],
+                new AdminMenuPlacement(
+                    location: AdminMenuLocation::LeftSidebar,
+                    group: 'Blog',
+                    groupIcon: 'bi bi-book',
+                    groupPriority: 100,
+                    priority: 100,
+                ),
             ],
         ],
     ],
@@ -78,13 +81,13 @@ return [
         },
         '_meta' => [
             'placements' => [
-                [
-                    'location' => 'left-sidebar',
-                    'group' => 'Blog',
-                    'groupIcon' => 'bi bi-book',
-                    'priority' => 100,
-                    'groupPriority' => 100,
-                ],
+                new AdminMenuPlacement(
+                    location: AdminMenuLocation::LeftSidebar,
+                    group: 'Blog',
+                    groupIcon: 'bi bi-book',
+                    groupPriority: 100,
+                    priority: 100,
+                ),
             ],
         ],
     ],
