@@ -48,6 +48,7 @@
     "besnovatyj/yii2-cms-helpers": "^1.0",
     "besnovatyj/yii2-cms-editor": "^1.0",
     "besnovatyj/yii2-cms-tags": "^1.0",
+    "besnovatyj/yii2-cms-upload": "^2.0",
     "besnovatyj/yii2-cms-validators": "^1.0"
   },
   "require-dev": {
