@@ -109,6 +109,7 @@ class PostController extends Controller
     {
         $post = $this->findModel($id);
         $form = new PostForm($post);
+
         if ($form->load(Yii::$app->request->post()) && $form->validate()) {
             try {
                 $this->service->edit($post, $form);
@@ -117,6 +118,10 @@ class PostController extends Controller
             } catch (Throwable $e) {
                 $this->handleDomainException($e, 'Ошибка');
             }
+        }
+        if ($form->hasErrors()) {
+            $errors = $form->getErrorSummary(true);
+            Yii::$app->session->addFlash('error', $errors);
         }
         return $this->render('update', [
             'model' => $form,

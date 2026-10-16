@@ -12,7 +12,6 @@ use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Forms\CompositeForm;
 use Besnovatyj\Meta\MetaForm;
 use Besnovatyj\Tags\forms\backend\TagsForm;
-use Besnovatyj\Blog\forms\backend\TaxonomiesForm;
 use yii\web\UploadedFile;
 
 /**
