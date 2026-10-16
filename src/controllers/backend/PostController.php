@@ -13,7 +13,6 @@ use Besnovatyj\Blog\forms\backend\search\PostSearch;
 use Besnovatyj\Blog\services\manage\PostManageService;
 use Besnovatyj\Kernel\controller\ControllerTrait;
 use Besnovatyj\Kernel\urlmanager\UrlManagerHelperTrait;
-use Exception;
 use Throwable;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -45,6 +44,7 @@ class PostController extends Controller
                 'actions' => [
                     'activate' => ['POST'],
                     'draft' => ['POST'],
+                    'pin-toggle' => ['POST'],
                     'delete' => ['POST'],
                     'ajax-save' => ['POST'],
                 ],
@@ -214,7 +214,7 @@ class PostController extends Controller
         try {
             $this->service->draft($id);
             Yii::$app->session->setFlash('success', 'Post successfully drafted');
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Yii::$app->errorHandler->logException($e);
             if (YII_DEBUG) {
                 Yii::$app->session->setFlash('error', VarDumper::dumpAsString($e->getMessage()));
@@ -230,7 +230,7 @@ class PostController extends Controller
         try {
             $this->service->pinToggle($id);
             Yii::$app->session->setFlash('success', 'Post pin changed.');
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Yii::$app->errorHandler->logException($e);
             if (YII_DEBUG) {
                 Yii::$app->session->setFlash('error', VarDumper::dumpAsString($e->getMessage()));

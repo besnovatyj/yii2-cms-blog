@@ -5,6 +5,7 @@
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
 
+use Besnovatyj\Backend\Widgets\grid\ActionColumn;
 use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\forms\backend\search\PostSearch;
@@ -12,6 +13,7 @@ use Besnovatyj\Blog\helpers\PostHelper;
 use Besnovatyj\TreeManager\Manager\TreeQueryScope;
 use Besnovatyj\DateTime\DateTimeRangeWidget;
 use Besnovatyj\Backend\Widgets\pagination\LinkPager;
+use Besnovatyj\Kernel\security\AccessHelper;
 use yii\grid\GridView;
 use yii\helpers\Html;
 
@@ -21,6 +23,7 @@ use yii\helpers\Html;
 
 $this->title = Yii::t('Blog', 'Posts');
 $this->params['breadcrumbs'][] = $this->title;
+$frontendUrlManager = Yii::$app->get('frontendUrlManager');
 //core\widgets\multiselect\Widget::widget(['id' => 'postsearch-taxonomy_id']);
 //$this->registerJs('$(document).ready(function() {$("#postsearch-taxonomy_id").multiselect();});');
 ?>
@@ -92,6 +95,75 @@ $this->params['breadcrumbs'][] = $this->title;
 //                    ],
                 'views',
 //                    'comments_count',
+                [
+                    'class'    => ActionColumn::class,
+                    'header'   => '',
+                    // Имена кнопок совпадают с действиями контроллёра: AccessHelper проверяет права по ним
+                    'template' => AccessHelper::filterActionColumn(['update', 'view', 'activate', 'draft', 'pin-toggle', 'delete']),
+                    'headerOptions' => ['style' => 'width:190px'],
+                    'buttons'  => [
+                        'update' => static fn ($url, Post $model): string => Html::a(
+                            '<i class="bi bi-pencil"></i>',
+                            ['update', 'id' => $model->id],
+                            ['class' => 'btn btn-sm btn-outline-primary', 'title' => 'Редактировать'],
+                        ),
+                        // Карточка в админке + пост на сайте
+                        'view' => static fn ($url, Post $model): string => Html::a(
+                            '<i class="bi bi-eye"></i>',
+                            ['view', 'id' => $model->id],
+                            ['class' => 'btn btn-sm btn-outline-secondary', 'title' => 'Просмотр'],
+                        ) . ' ' . Html::a(
+                            '<i class="bi bi-box-arrow-up-right"></i>',
+                            $frontendUrlManager->createAbsoluteUrl(['/Blog/post/view/', 'id' => $model->id]),
+                            ['class' => 'btn btn-sm btn-outline-secondary', 'title' => 'Открыть на сайте', 'target' => '_blank'],
+                        ),
+                        'activate' => static function ($url, Post $model): string {
+                            if ($model->isActive()) return '';
+                            return Html::a(
+                                '<i class="bi bi-check-circle"></i>',
+                                ['activate', 'id' => $model->id],
+                                [
+                                    'class'        => 'btn btn-sm btn-outline-success',
+                                    'title'        => 'Опубликовать',
+                                    'data-method'  => 'post',
+                                    'data-confirm' => 'Опубликовать пост?',
+                                ],
+                            );
+                        },
+                        'draft' => static function ($url, Post $model): string {
+                            if ($model->isDraft()) return '';
+                            return Html::a(
+                                '<i class="bi bi-file-earmark"></i>',
+                                ['draft', 'id' => $model->id],
+                                [
+                                    'class'        => 'btn btn-sm btn-outline-secondary',
+                                    'title'        => 'В черновик',
+                                    'data-method'  => 'post',
+                                    'data-confirm' => 'Перевести в черновик?',
+                                ],
+                            );
+                        },
+                        'pin-toggle' => static fn ($url, Post $model): string => Html::a(
+                            $model->isPinned() ? '<i class="bi bi-pin-angle-fill"></i>' : '<i class="bi bi-pin-angle"></i>',
+                            ['pin-toggle', 'id' => $model->id],
+                            [
+                                'class'       => $model->isPinned() ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-outline-warning',
+                                'title'       => $model->isPinned() ? 'Открепить' : 'Закрепить',
+                                'data-method' => 'post',
+                            ],
+                        ),
+                        'delete' => static fn ($url, Post $model): string => Html::a(
+                            '<i class="bi bi-trash"></i>',
+                            ['delete', 'id' => $model->id],
+                            [
+                                'class'        => 'btn btn-sm btn-outline-danger',
+                                'title'        => 'Удалить',
+                                'data-method'  => 'post',
+                                'data-confirm' => 'Удалить пост безвозвратно?',
+                            ],
+                        ),
+                    ],
+                ],
             ],
         ]) ?>
     </div>
