@@ -5,17 +5,10 @@
  * Copyright (c) 2026 Besnovatyj. Licensed under the MIT License.
  */
 
-use Besnovatyj\Backend\Widgets\grid\ActionColumn;
-use Besnovatyj\Blog\entities\Post;
-use Besnovatyj\Blog\entities\taxonomy\Taxonomy;
 use Besnovatyj\Blog\forms\backend\search\PostSearch;
-use Besnovatyj\Blog\helpers\PostHelper;
-use Besnovatyj\TreeManager\Manager\TreeQueryScope;
-use Besnovatyj\DateTime\DateTimeRangeWidget;
+use Besnovatyj\Blog\grid\PostGrid;
 use Besnovatyj\Backend\Widgets\pagination\LinkPager;
-use Besnovatyj\Kernel\security\AccessHelper;
 use yii\grid\GridView;
-use yii\helpers\Html;
 
 /* @var $this yii\web\View */
 /* @var $searchModel PostSearch */
@@ -23,9 +16,48 @@ use yii\helpers\Html;
 
 $this->title = Yii::t('Blog', 'Posts');
 $this->params['breadcrumbs'][] = $this->title;
-$frontendUrlManager = Yii::$app->get('frontendUrlManager');
+// Фильтры в оффканвас для мобилки: строка фильтров таблицы там скрыта (grid-view.scss)
+$this->params['mobileFiltersForm'] = $this->render('_mobileFilters', ['model' => $searchModel]);
 //core\widgets\multiselect\Widget::widget(['id' => 'postsearch-taxonomy_id']);
 //$this->registerJs('$(document).ready(function() {$("#postsearch-taxonomy_id").multiselect();});');
+
+// Спиннер htmx-кнопок колонок статуса и закрепления (PostGrid::htmxButton)
+$this->registerCss('
+.blog-post-grid .htmx-indicator {
+    display: none;
+}
+.blog-post-grid .htmx-request .htmx-indicator {
+    display: inline-block;
+}
+/* Иконку на время запроса скрываем, чтобы кнопка не растягивалась */
+.blog-post-grid .htmx-request i {
+    display: none;
+}
+
+/* Мобильные карточки (дополнение к grid-view.scss админки, тот же брейкпоинт) */
+@media (max-width: 767.98px) {
+    /* Длинная ячейка: подпись сверху, содержимое под ней на всю ширину карточки */
+    .blog-post-grid td.' . PostGrid::CELL_STACK . ' {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+    }
+    .blog-post-grid td.' . PostGrid::CELL_STACK . '::before {
+        margin-right: 0;
+        margin-bottom: .25rem;
+    }
+    .blog-post-grid td.' . PostGrid::CELL_STACK . ' > div {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+    /* Кнопки переносятся по строкам */
+    .blog-post-grid td.' . PostGrid::CELL_ACTIONS . ' {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: .25rem;
+    }
+}
+');
 ?>
 
 <?php echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -38,133 +70,18 @@ $frontendUrlManager = Yii::$app->get('frontendUrlManager');
         <?= GridView::widget([
             'dataProvider' => $dataProvider,
             'filterModel' => $searchModel,
-            'layout' => "{summary}\n{items}",
-            'columns' => [
-                'id',
-                [
-                    'value' => static function (Post $model) {
-                        return $model->photo ? Html::img($model->getThumbUrl('photo', 'admin')) : null;
-                    },
-                    'format' => 'raw',
-                    'contentOptions' => ['data-label' => 'Photo'],
-                ],
-                [
-                    'attribute' => 'created_at',
-                    'value' => function (Post $model) {
-                        return $model->created_at;
-                    },
-                    'filter' => DateTimeRangeWidget::widget([
-                        'model' => $searchModel,
-                        'attributeFrom' => 'date_from',
-                        'attributeTo' => 'date_to',
-                    ]),
-                    'format' => 'datetime',
-                ],
-                [
-                    'label' => 'Title or desc',
-                    'attribute' => 'title',
-                    'value' => static function (Post $model) {
-                        $out = Html::a($model->title, ['view', 'id' => $model->id]);
-                        return $out . '<br /><small>' . $model->description . '</small>';
-                    },
-                    'format' => 'raw',
-                    'contentOptions' => ['data-label' => 'Title or desc'],
-                ],
-                [
-                    'attribute' => 'taxonomy_id',
-                    'filter' => new TreeQueryScope(Taxonomy::class)->dropdownTree(),
-                    'value' => 'taxonomy.name',
-                    'contentOptions' => ['data-label' => 'Taxonomy'],
-                ],
-                [
-                    'attribute' => 'status',
-                    'filter' => $searchModel->statusList(),
-                    'value' => static function (Post $model) {
-                        return PostHelper::statusLabel($model);
-                    },
-                    'format' => 'raw',
-                    'contentOptions' => ['style' => 'min-height: 40px', 'data-label' => 'Status'],
-                ],
-//                    [
-//                        'attribute' => 'comments_allowed',
-//                        'filter' => $searchModel->commentStatusList(),
-//                        'value' => function (Post $model) {
-//                            return PostHelper::commentStatusLabel($model);
-//                        },
-//                        'format' => 'raw',
-//                    ],
-                'views',
-//                    'comments_count',
-                [
-                    'class'    => ActionColumn::class,
-                    'header'   => '',
-                    // Имена кнопок совпадают с действиями контроллёра: AccessHelper проверяет права по ним
-                    'template' => AccessHelper::filterActionColumn(['update', 'view', 'activate', 'draft', 'pin-toggle', 'delete']),
-                    'headerOptions' => ['style' => 'width:190px'],
-                    'buttons'  => [
-                        'update' => static fn ($url, Post $model): string => Html::a(
-                            '<i class="bi bi-pencil"></i>',
-                            ['update', 'id' => $model->id],
-                            ['class' => 'btn btn-sm btn-outline-primary', 'title' => 'Редактировать'],
-                        ),
-                        // Карточка в админке + пост на сайте
-                        'view' => static fn ($url, Post $model): string => Html::a(
-                            '<i class="bi bi-eye"></i>',
-                            ['view', 'id' => $model->id],
-                            ['class' => 'btn btn-sm btn-outline-secondary', 'title' => 'Просмотр'],
-                        ) . ' ' . Html::a(
-                            '<i class="bi bi-box-arrow-up-right"></i>',
-                            $frontendUrlManager->createAbsoluteUrl(['/Blog/post/view/', 'id' => $model->id]),
-                            ['class' => 'btn btn-sm btn-outline-secondary', 'title' => 'Открыть на сайте', 'target' => '_blank'],
-                        ),
-                        'activate' => static function ($url, Post $model): string {
-                            if ($model->isActive()) return '';
-                            return Html::a(
-                                '<i class="bi bi-check-circle"></i>',
-                                ['activate', 'id' => $model->id],
-                                [
-                                    'class'        => 'btn btn-sm btn-outline-success',
-                                    'title'        => 'Опубликовать',
-                                    'data-method'  => 'post',
-                                    'data-confirm' => 'Опубликовать пост?',
-                                ],
-                            );
-                        },
-                        'draft' => static function ($url, Post $model): string {
-                            if ($model->isDraft()) return '';
-                            return Html::a(
-                                '<i class="bi bi-file-earmark"></i>',
-                                ['draft', 'id' => $model->id],
-                                [
-                                    'class'        => 'btn btn-sm btn-outline-secondary',
-                                    'title'        => 'В черновик',
-                                    'data-method'  => 'post',
-                                    'data-confirm' => 'Перевести в черновик?',
-                                ],
-                            );
-                        },
-                        'pin-toggle' => static fn ($url, Post $model): string => Html::a(
-                            $model->isPinned() ? '<i class="bi bi-pin-angle-fill"></i>' : '<i class="bi bi-pin-angle"></i>',
-                            ['pin-toggle', 'id' => $model->id],
-                            [
-                                'class'       => $model->isPinned() ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-outline-warning',
-                                'title'       => $model->isPinned() ? 'Открепить' : 'Закрепить',
-                                'data-method' => 'post',
-                            ],
-                        ),
-                        'delete' => static fn ($url, Post $model): string => Html::a(
-                            '<i class="bi bi-trash"></i>',
-                            ['delete', 'id' => $model->id],
-                            [
-                                'class'        => 'btn btn-sm btn-outline-danger',
-                                'title'        => 'Удалить',
-                                'data-method'  => 'post',
-                                'data-confirm' => 'Удалить пост безвозвратно?',
-                            ],
-                        ),
-                    ],
-                ],
-            ],
+            'layout' => "
+                <div class='d-flex justify-content-between align-items-center mb-3'>
+                    {summary}
+                    <button class='btn btn-primary d-md-none' type='button' data-bs-toggle='offcanvas' data-bs-target='#offcanvasFilters'>
+                        <i class='bi bi-funnel'></i> Фильтры
+                    </button>
+                </div>
+                {items}
+            ",
+            'options' => ['class' => 'grid-view blog-post-grid'],
+            'tableOptions' => ['class' => PostGrid::TABLE_CLASS],
+            'columns' => PostGrid::columns(Yii::$app->get('frontendUrlManager'), $searchModel),
         ]) ?>
     </div>
     <div class="card-footer">

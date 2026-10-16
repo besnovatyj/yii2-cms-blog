@@ -10,9 +10,11 @@ namespace Besnovatyj\Blog\controllers\backend;
 use Besnovatyj\Blog\entities\Post;
 use Besnovatyj\Blog\forms\backend\PostForm;
 use Besnovatyj\Blog\forms\backend\search\PostSearch;
+use Besnovatyj\Blog\grid\PostGrid;
 use Besnovatyj\Blog\services\manage\PostManageService;
 use Besnovatyj\Kernel\controller\ControllerTrait;
 use Besnovatyj\Kernel\urlmanager\UrlManagerHelperTrait;
+use DomainException;
 use Throwable;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -187,49 +189,63 @@ class PostController extends Controller
 
     /**
      * @param integer $id
-     * @return Response
+     * @return Response|string строка таблицы при htmx-запросе, иначе редирект
+     * @throws BadRequestHttpException|NotFoundHttpException|InvalidConfigException
      */
-    public function actionActivate(int $id): Response
+    public function actionActivate(int $id): Response|string
     {
-        try {
-            $this->service->activate($id);
-            Yii::$app->session->setFlash('success', 'Post successfully activated');
-        } catch (Throwable $e) {
-            Yii::$app->errorHandler->logException($e);
-            if (YII_DEBUG) {
-                Yii::$app->session->setFlash('error', VarDumper::dumpAsString($e->getMessage()));
-            } else {
-                Yii::$app->session->setFlash('error', 'Ошибка');
-            }
-        }
-        return $this->goReferer();
+        return $this->switchState($id, fn (int $id) => $this->service->activate($id), 'Post successfully activated');
     }
 
     /**
      * @param integer $id
-     * @return Response
+     * @return Response|string строка таблицы при htmx-запросе, иначе редирект
+     * @throws BadRequestHttpException|NotFoundHttpException|InvalidConfigException
      */
-    public function actionDraft(int $id): Response
+    public function actionDraft(int $id): Response|string
     {
-        try {
-            $this->service->draft($id);
-            Yii::$app->session->setFlash('success', 'Post successfully drafted');
-        } catch (Throwable $e) {
-            Yii::$app->errorHandler->logException($e);
-            if (YII_DEBUG) {
-                Yii::$app->session->setFlash('error', VarDumper::dumpAsString($e->getMessage()));
-            } else {
-                Yii::$app->session->setFlash('error', 'Ошибка');
-            }
-        }
-        return $this->goReferer();
+        return $this->switchState($id, fn (int $id) => $this->service->draft($id), 'Post successfully drafted');
     }
 
-    public function actionPinToggle(int $id): Response
+    /**
+     * @param integer $id
+     * @return Response|string строка таблицы при htmx-запросе, иначе редирект
+     * @throws BadRequestHttpException|NotFoundHttpException|InvalidConfigException
+     */
+    public function actionPinToggle(int $id): Response|string
     {
+        return $this->switchState($id, fn (int $id) => $this->service->pinToggle($id), 'Post pin changed.');
+    }
+
+    /**
+     * Смена статуса/флага поста.
+     *
+     * htmx-запрос (заголовок HX-Request) получает обновлённую строку таблицы {@see PostGrid::renderRow()}.
+     * Ошибки отданы {@see \yii\web\ErrorHandler}: отказ доменной логики (например, «Пост уже активен» с
+     * устаревшей страницы) — {@see BadRequestHttpException} с текстом, нет поста — 404, прочее всплывает
+     * как есть. Глобальный обработчик админки (`htmx-errors.ts`) показывает их тостом.
+     * Обычный запрос — flash-сообщение и возврат на исходную страницу.
+     *
+     * @param int                $id
+     * @param callable(int):void $operation       метод сервиса
+     * @param string             $successMessage  flash при успехе (не htmx)
+     * @throws BadRequestHttpException|NotFoundHttpException|InvalidConfigException
+     */
+    private function switchState(int $id, callable $operation, string $successMessage): Response|string
+    {
+        if (Yii::$app->request->headers->has('HX-Request')) {
+            $this->findModel($id);
+            try {
+                $operation($id);
+            } catch (DomainException $e) {
+                throw new BadRequestHttpException($e->getMessage(), 0, $e);
+            }
+            return PostGrid::renderRow($this->findModel($id), $this->getFrontendUrlManager());
+        }
+
         try {
-            $this->service->pinToggle($id);
-            Yii::$app->session->setFlash('success', 'Post pin changed.');
+            $operation($id);
+            Yii::$app->session->setFlash('success', $successMessage);
         } catch (Throwable $e) {
             Yii::$app->errorHandler->logException($e);
             if (YII_DEBUG) {

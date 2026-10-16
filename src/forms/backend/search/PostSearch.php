@@ -14,6 +14,9 @@ use yii\data\ActiveDataProvider;
 
 class PostSearch extends Model
 {
+    /** Формат границ диапазона дат: точность до минуты, как отдаёт DateTimeRangeWidget */
+    public const DATE_FORMAT = 'Y-m-d H:i';
+
     public $id;
     public $title;
     public $description;
@@ -31,6 +34,8 @@ class PostSearch extends Model
 //            ['taxonomy_id', 'each', 'rule' => ['integer']],
             [['id', 'status', 'comments_allowed', 'taxonomy_id'], 'integer'],
             [['title', 'description', 'content'], 'string'],
+            // Формат совпадает с valueFormat DateTimeRangeWidget (PostGrid, _mobileFilters)
+            [['date_from', 'date_to'], 'date', 'format' => 'php:' . self::DATE_FORMAT],
         ];
     }
 
@@ -70,7 +75,10 @@ class PostSearch extends Model
         $query
 //            ->andFilterWhere(['in', 'taxonomy_id', $this->taxonomy_id])
             ->andFilterWhere(['like', 'content', $this->content])
-            ->andFilterWhere(['OR', ['like', 'title', $this->title], ['like', 'description', $this->title]]);
+            ->andFilterWhere(['OR', ['like', 'title', $this->title], ['like', 'description', $this->title]])
+            ->andFilterWhere(['>=', 'created_at', $this->date_from ?: null])
+            // Верхняя граница с точностью до минуты включает всю минуту
+            ->andFilterWhere(['<=', 'created_at', $this->date_to ? $this->date_to . ':59' : null]);
 
         return $dataProvider;
     }
