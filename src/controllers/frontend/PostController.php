@@ -107,6 +107,8 @@ class PostController extends \yii\web\Controller
         $post->refreshViewCounter();
         return $this->render('view', [
             'post' => $post,
+            'previous' => $this->posts->findPrevious($post),
+            'next' => $this->posts->findNext($post),
         ]);
     }
 

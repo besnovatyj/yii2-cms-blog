@@ -114,6 +114,46 @@ class PostReadRepository
     }
 
     /**
+     * Предыдущий (более старый) видимый пост основного раздела — ближайший с меньшим id.
+     *
+     * Соседи ищутся по PK, а не по дате: id растёт вместе с публикацией, а дыры в нумерации
+     * не мешают — берётся ближайший, а не `id - 1`.
+     *
+     * Соседство — только в основном разделе (`taxonomy_id`): дополнительные разделы
+     * (`taxonomyAssignments`) и подразделы не учитываются, закрепление тоже. У поста без раздела
+     * соседи — такие же посты без раздела (`['taxonomy_id' => null]` Yii строит как `IS NULL`).
+     * Индекс `taxonomy_id` в InnoDB неявно содержит PK, поэтому выборка идёт по индексу без сортировки.
+     */
+    public function findPrevious(Post $post): ?Post
+    {
+        $previous = Post::find()->visible()
+            ->andWhere(['taxonomy_id' => $post->taxonomy_id])
+            ->andWhere(['<', 'id', $post->id])
+            ->orderBy(['id' => SORT_DESC])
+            ->limit(1)
+            ->one();
+
+        return $previous instanceof Post ? $previous : null;
+    }
+
+    /**
+     * Следующий (более новый) видимый пост основного раздела — ближайший с большим id.
+     *
+     * @see findPrevious()
+     */
+    public function findNext(Post $post): ?Post
+    {
+        $next = Post::find()->visible()
+            ->andWhere(['taxonomy_id' => $post->taxonomy_id])
+            ->andWhere(['>', 'id', $post->id])
+            ->orderBy(['id' => SORT_ASC])
+            ->limit(1)
+            ->one();
+
+        return $next instanceof Post ? $next : null;
+    }
+
+    /**
      * Опубликованные посты для сквозного поиска.
      *
      * В индекс идут только активные записи — то же, что видит анонимный посетитель. Теги и
