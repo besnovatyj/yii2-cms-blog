@@ -69,13 +69,13 @@ if (Yii::$app->getModule('Config') instanceof Module) {
         <nav class="d-flex flex-column flex-sm-row gap-2 mb-4" aria-label="Соседние посты">
             <?php if ($previous !== null): ?>
                 <a href="<?= Url::to(['view', 'id' => $previous->id]) ?>" rel="prev"
-                   class="btn btn-outline-secondary text-truncate" title="<?= Html::encode($previous->title) ?>">
+                   class="btn btn-outline-secondary text-start">
                     &larr; <?= Html::encode($previous->title) ?>
                 </a>
             <?php endif; ?>
             <?php if ($next !== null): ?>
                 <a href="<?= Url::to(['view', 'id' => $next->id]) ?>" rel="next"
-                   class="btn btn-outline-secondary text-truncate ms-sm-auto" title="<?= Html::encode($next->title) ?>">
+                   class="btn btn-outline-secondary text-end ms-sm-auto">
                     <?= Html::encode($next->title) ?> &rarr;
                 </a>
             <?php endif; ?>
