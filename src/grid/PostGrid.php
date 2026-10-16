@@ -76,10 +76,13 @@ final class PostGrid
             [
                 'attribute' => 'created_at',
                 'label' => 'Created',
+                // Режим без модели: скрытые поля без id — иначе они совпали бы по id с полями
+                // того же виджета в мобильной форме фильтров (_mobileFilters.php)
                 'filter' => $searchModel ? DateTimeRangeWidget::widget([
-                    'model' => $searchModel,
-                    'attributeFrom' => 'date_from',
-                    'attributeTo' => 'date_to',
+                    'nameFrom' => Html::getInputName($searchModel, 'date_from'),
+                    'nameTo' => Html::getInputName($searchModel, 'date_to'),
+                    'valueFrom' => (string)$searchModel->date_from,
+                    'valueTo' => (string)$searchModel->date_to,
                     'valueFormat' => PostSearch::DATE_FORMAT,
                 ]) : false,
                 'format' => 'datetime',
