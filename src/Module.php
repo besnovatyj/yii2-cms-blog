@@ -6,6 +6,9 @@
 
 namespace Besnovatyj\Blog;
 
+use Besnovatyj\Blog\blocks\LatestPostsBlockType;
+use Besnovatyj\Contracts\block\BlockType;
+use Besnovatyj\Contracts\block\BlockTypeProvider;
 use Besnovatyj\Kernel\module\CmsModule;
 use Besnovatyj\Contracts\module\DeclaresModule;
 use Besnovatyj\Contracts\module\ProvidesBootstrap;
@@ -35,7 +38,7 @@ class Module extends CmsModule implements
     DeclaresModule, ProvidesBootstrap,
     ProvidesDependencies, ProvidesDirectories,
     ProvidesMigrations, ProvidesOptions, MenuTargetProvider, SearchableProvider,
-    SitemapProvider, SitemapFreshness, TaggableProvider
+    SitemapProvider, SitemapFreshness, TaggableProvider, BlockTypeProvider
 {
     public const bool EDITABLE = true;
     public const string MODULE_ID = 'Blog';
@@ -97,6 +100,17 @@ class Module extends CmsModule implements
     private function taxonomySlugMap(): array
     {
         return (new TreeQueryScope(Taxonomy::class))->dropdownTree(keyAttribute: 'slug', indent: '— ');
+    }
+
+    /**
+     * Типы блоков модуля для модуля блоков. Реализация {@see BlockTypeProvider}; вызывается только
+     * модулем блоков, если он установлен. Полный id типа — `Blog:latest`.
+     *
+     * @return array<string, BlockType>
+     */
+    public function blockTypes(): array
+    {
+        return [LatestPostsBlockType::ID => (new LatestPostsBlockType())->definition()];
     }
 
     /**

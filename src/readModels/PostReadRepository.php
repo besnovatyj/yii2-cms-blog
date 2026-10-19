@@ -84,6 +84,39 @@ class PostReadRepository
         return Post::find()->visible()->with('taxonomy')->orderBy(['id' => SORT_DESC])->limit($limit)->all();
     }
 
+    /**
+     * Последние посты по дате публикации: всего блога или рубрики.
+     *
+     * В отличие от {@see getLast()} порядок — по `created_at`, а не по id: посты, перенесённые
+     * парсером со старого сайта, получают id в порядке переноса, а не публикации. Пост попадает
+     * в рубрику, если она у него основная или дополнительная, как в ленте рубрики
+     * ({@see getAllByTaxonomy()}).
+     *
+     * @param int      $limit           сколько постов
+     * @param int|null $taxonomyId      рубрика; null — весь блог
+     * @param bool     $withDescendants вместе с подрубриками
+     * @return Post[]
+     */
+    public function latest(int $limit, ?int $taxonomyId = null, bool $withDescendants = true): array
+    {
+        $query = Post::find()->alias('p')->visible('p')->with('taxonomy')
+            ->orderBy(['p.created_at' => SORT_DESC, 'p.id' => SORT_DESC])
+            ->limit($limit);
+
+        if ($taxonomyId !== null) {
+            $taxonomy = Taxonomy::findOne($taxonomyId);
+            if ($taxonomy === null) {
+                return [];
+            }
+            $ids = $withDescendants ? $this->treeScope->descendantIds($taxonomy, andSelf: true) : [$taxonomy->id];
+            $query->joinWith(['taxonomyAssignments ta'], false);
+            $query->andWhere(['or', ['p.taxonomy_id' => $ids], ['ta.taxonomy_id' => $ids]]);
+            $query->groupBy('p.id');
+        }
+
+        return $query->all();
+    }
+
     public function getLastUpdated($limit): array
     {
         return Post::find()->visible()->orderBy(['updated_at' => SORT_DESC])->limit($limit)->all();
